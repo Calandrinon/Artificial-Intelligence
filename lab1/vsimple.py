@@ -174,6 +174,9 @@ class Drone():
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        self.stack = [[self.x, self.y]]
+        self.visited = []
+        self.currentNode = [self.x, self.y]
     
     def move(self, detectedMap):
         pressed_keys = pygame.key.get_pressed()
@@ -203,29 +206,27 @@ class Drone():
         # TO DO!
         #rewrite this function in such a way that you perform an automatic 
         # mapping with DFS           
-        stack = [[self.x, self.y]]
-        visited = []
 
-        while len(stack) > 0:
-            currentNode = stack.pop()
-            self.x = currentNode[0]
-            self.y = currentNode[1]
-            if currentNode in visited:
-                continue
-            visited.append(currentNode)
-            print("currentNode: {}".format(currentNode))
+        if len(self.stack) == 0:
+            return
 
-            newDirections = [self.__addPositions(currentNode, v[i]) for i in range(0, 4)]
-            print(newDirections)
+        self.currentNode = self.stack.pop()
+        self.x = self.currentNode[0]
+        self.y = self.currentNode[1]
+        if self.currentNode in self.visited:
+            return
+        self.visited.append(self.currentNode)
+        print("currentNode: {}".format(self.currentNode))
 
-            for nextPosition in range(0, 4):
-                nextX = newDirections[nextPosition][0]
-                nextY = newDirections[nextPosition][1]
-                if self.validPosition(nextX, nextY, detectedMap) and nextPosition not in visited:
-                    stack.append([nextX, nextY])
+        newDirections = [self.__addPositions(self.currentNode, v[i]) for i in range(0, 4)]
+        print(newDirections)
+
+        for nextPosition in range(0, 4):
+            nextX = newDirections[nextPosition][0]
+            nextY = newDirections[nextPosition][1]
+            if self.validPosition(nextX, nextY, detectedMap) and nextPosition not in self.visited:
+                self.stack.append([nextX, nextY])
         
-        print("VISITED: {}".format(visited))
-
                   
 # define a main function
 def main():
@@ -263,6 +264,7 @@ def main():
     
     # define a variable to control the main loop
     running = True
+    lastTime = pygame.time.get_ticks()
      
     # main loop
     while running:
@@ -272,13 +274,18 @@ def main():
             if event.type == pygame.QUIT:
                 # change the value to False, to exit the main loop
                 running = False
+            """
             if event.type == KEYDOWN:
                 # use this function instead of move
                 d.moveDSF(m)
                 #d.move(m)
+            """
         m.markDetectedWalls(e, d.x, d.y)
         screen.blit(m.image(d.x,d.y),(400,0))
         pygame.display.flip()
+        if pygame.time.get_ticks() - lastTime >= 10:
+            d.moveDSF(m)
+            lastTime = pygame.time.get_ticks()
        
     pygame.quit()
      

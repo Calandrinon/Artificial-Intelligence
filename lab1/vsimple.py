@@ -1,5 +1,3 @@
-
-
 # import the pygame module, so you can use it
 import pickle,pygame,sys
 from pygame.locals import *
@@ -20,7 +18,6 @@ UP = 0
 DOWN = 2
 LEFT = 1
 RIGHT = 3
-
 #define indexes variations 
 v = [[-1, 0], [1, 0], [0, 1], [0, -1]]
 
@@ -104,7 +101,12 @@ class DMap():
         for i in range(self.__n):
             for j in range(self.__m):
                 self.surface[i][j] = -1
-        
+
+    def getWidth(self):
+        return self.__n
+
+    def getHeight(self):
+        return self.__m
         
     def markDetectedWalls(self, e, x, y):
         #   To DO
@@ -135,6 +137,7 @@ class DMap():
             self.surface[x][j] = 1
         
         j = y - 1
+
         if wals[RIGHT] > 0:
             while ((j >= 0) and (j >= y - wals[RIGHT])):
                 self.surface[x][j] = 0
@@ -142,7 +145,7 @@ class DMap():
         if (j >= 0):
             self.surface[x][j] = 1
         
-        return None
+        return self.surface
         
     def image(self, x, y):
         
@@ -163,6 +166,8 @@ class DMap():
         drona = pygame.image.load("drona.png")
         imagine.blit(drona, (y *20, x*20))
         return imagine
+
+
         
         
 class Drone():
@@ -185,12 +190,42 @@ class Drone():
         if self.y < 19:        
               if pressed_keys[K_RIGHT] and detectedMap.surface[self.x][self.y+1]==0:
                   self.y = self.y + 1
+
+    def __addPositions(self, firstPosition, secondPosition):
+        return [firstPosition[0]+secondPosition[0], firstPosition[1]+secondPosition[1]]
+
+    def validPosition(self, x, y, detectedMap):
+        if x >= 0 and y >= 0 and x < detectedMap.getHeight() and y < detectedMap.getWidth() and detectedMap.surface[x][y] != 1:
+            return True
+        return False
                   
     def moveDSF(self, detectedMap):
-        pass
-         # TO DO!
-         #rewrite this function in such a way that you perform an automatic 
-         # mapping with DFS           
+        # TO DO!
+        #rewrite this function in such a way that you perform an automatic 
+        # mapping with DFS           
+        stack = [[self.x, self.y]]
+        visited = []
+
+        while len(stack) > 0:
+            currentNode = stack.pop()
+            self.x = currentNode[0]
+            self.y = currentNode[1]
+            if currentNode in visited:
+                continue
+            visited.append(currentNode)
+            print("currentNode: {}".format(currentNode))
+
+            newDirections = [self.__addPositions(currentNode, v[i]) for i in range(0, 4)]
+            print(newDirections)
+
+            for nextPosition in range(0, 4):
+                nextX = newDirections[nextPosition][0]
+                nextY = newDirections[nextPosition][1]
+                if self.validPosition(nextX, nextY, detectedMap) and nextPosition not in visited:
+                    stack.append([nextX, nextY])
+        
+        print("VISITED: {}".format(visited))
+
                   
 # define a main function
 def main():
@@ -239,8 +274,8 @@ def main():
                 running = False
             if event.type == KEYDOWN:
                 # use this function instead of move
-                #d.moveDSF(m)
-                d.move(m)
+                d.moveDSF(m)
+                #d.move(m)
         m.markDetectedWalls(e, d.x, d.y)
         screen.blit(m.image(d.x,d.y),(400,0))
         pygame.display.flip()

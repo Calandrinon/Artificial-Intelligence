@@ -1,0 +1,10 @@
+-1 - unexplored cell
+0 - empty square
+1 - wall
+
+randomMap - 20% chance for a black square to be generated (value 1)
+__str__ - displays the surface
+readUDMSensors - reads sensor data and returns the distance to the closest walls in every direction (up/right/down/left)
+saveEnvironment - saves the matrix of the surface with each cell value (-1,0 or 1)
+loadEnvironment - loads the matrix of the surface from a file
+image - generates a pygame image containing the surface

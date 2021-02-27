@@ -217,15 +217,18 @@ class Drone():
             return
         self.visited.append(self.currentNode)
         print("currentNode: {}".format(self.currentNode))
-
+        print("stack before: {}".format(self.stack))
+        print("visited: {}".format(self.visited))
+        #newDirections = list(map(lambda x: , [self.__addPositions(self.currentNode, v[i]) for i in range(0, 4)]))
         newDirections = [self.__addPositions(self.currentNode, v[i]) for i in range(0, 4)]
         print(newDirections)
-
-        for nextPosition in range(0, 4):
-            nextX = newDirections[nextPosition][0]
-            nextY = newDirections[nextPosition][1]
-            if self.validPosition(nextX, nextY, detectedMap) and nextPosition not in self.visited:
+        
+        for nextPositionIndex in range(0, 4):
+            nextX = newDirections[nextPositionIndex][0]
+            nextY = newDirections[nextPositionIndex][1]
+            if self.validPosition(nextX, nextY, detectedMap) and [nextX, nextY] not in self.visited:
                 self.stack.append([nextX, nextY])
+        print("stack after: {}".format(self.stack))
         
                   
 # define a main function
@@ -274,18 +277,18 @@ def main():
             if event.type == pygame.QUIT:
                 # change the value to False, to exit the main loop
                 running = False
-            """
             if event.type == KEYDOWN:
                 # use this function instead of move
                 d.moveDSF(m)
                 #d.move(m)
-            """
         m.markDetectedWalls(e, d.x, d.y)
         screen.blit(m.image(d.x,d.y),(400,0))
         pygame.display.flip()
-        if pygame.time.get_ticks() - lastTime >= 10:
+        """
+        if pygame.time.get_ticks() - lastTime >= 100:
             d.moveDSF(m)
             lastTime = pygame.time.get_ticks()
+        """
        
     pygame.quit()
      

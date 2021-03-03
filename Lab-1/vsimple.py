@@ -198,7 +198,7 @@ class Drone():
         return [firstPosition[0]+secondPosition[0], firstPosition[1]+secondPosition[1]]
 
     def validPosition(self, x, y, detectedMap):
-        if x >= 0 and y >= 0 and x < detectedMap.getHeight() and y < detectedMap.getWidth() and detectedMap.surface[x][y] != 1:
+        if x >= 0 and y >= 0 and x < detectedMap.getHeight() and y < detectedMap.getWidth() and detectedMap.surface[x][y] != 1 and [x,y] not in self.visited:
             return True
         return False
                   
@@ -210,19 +210,12 @@ class Drone():
         if len(self.stack) == 0:
             return
 
-        self.currentNode = self.stack.pop()
-        self.x = self.currentNode[0]
-        self.y = self.currentNode[1]
-        detectedMap.markDetectedWalls(e, self.x, self.y)
+        #detectedMap.markDetectedWalls(e, self.x, self.y)
         if self.currentNode in self.visited:
             return
         self.visited.append(self.currentNode)
         print("currentNode: {}".format(self.currentNode))
-        #print("stack before: {}".format(self.stack))
-        #print("visited: {}".format(self.visited))
-        #newDirections = list(map(lambda x: , [self.__addPositions(self.currentNode, v[i]) for i in range(0, 4)]))
         newDirections = [self.__addPositions(self.currentNode, v[i]) for i in range(0, 4)]
-        #print(newDirections)
         
         for nextPositionIndex in range(0, 4):
             nextX = newDirections[nextPositionIndex][0]
@@ -230,9 +223,12 @@ class Drone():
             if not self.validPosition(nextX, nextY, detectedMap):
                 print("invalidPosition: ({}; {})".format(nextX, nextY))
 
-            if self.validPosition(nextX, nextY, detectedMap) and [nextX, nextY] not in self.visited:
+            if self.validPosition(nextX, nextY, detectedMap):
                 self.stack.append([nextX, nextY])
-        #print("stack after: {}".format(self.stack))
+
+        self.currentNode = self.stack.pop()
+        self.x = self.currentNode[0]
+        self.y = self.currentNode[1]
         
                   
 # define a main function
@@ -291,7 +287,7 @@ def main():
         m.markDetectedWalls(e, d.x, d.y)
         screen.blit(m.image(d.x,d.y),(400,0))
         pygame.display.flip()
-        if pygame.time.get_ticks() - lastTime >= 500:
+        if pygame.time.get_ticks() - lastTime >= 150:
             d.moveDSF(m, e)
             lastTime = pygame.time.get_ticks()
        

@@ -177,6 +177,8 @@ class Drone():
         self.stack = [[self.x, self.y]]
         self.visited = []
         self.currentNode = [self.x, self.y]
+        self.previousPositions = {}
+        self.returning = False
     
     def move(self, detectedMap):
         pressed_keys = pygame.key.get_pressed()
@@ -202,33 +204,66 @@ class Drone():
             return True
         return False
                   
-    def moveDSF(self, detectedMap, e):
+    def moveDSF(self, detectedMap):
         # TO DO!
         #rewrite this function in such a way that you perform an automatic 
         # mapping with DFS           
-
+        #print("visited: {}".format(self.visited))
+        if self.returning:
+            lastPathBranch = self.stack[-1]
+            print("lastPathBranch: {}".format(lastPathBranch))
+            neighbourCellsOfLastPathBranch = [self.__addPositions([self.stack[-1][0], self.stack[-1][1]], v[i]) for i in range(0,4)]
+            if [self.x, self.y] not in neighbourCellsOfLastPathBranch:
+                previousPosition = self.previousPositions[(self.x, self.y)]
+                print("Previous position: [{};{}]".format(self.x, self.y))
+                """
+                self.x = self.visited[-2][0]
+                self.y = self.visited[-2][1]
+                """
+                oldx = self.x 
+                oldy = self.y
+                self.x = previousPosition[0]
+                self.y = previousPosition[1]
+                self.previousPositions[(oldx, oldy)] = (self.x, self.y)
+                print("Current position: [{};{}]".format(self.x, self.y))
+            else:
+                self.returning = False
+                self.currentNode = self.stack.pop()
+                self.x = self.currentNode[0]
+                self.y = self.currentNode[1]
+                print("returning=false")
+        
         if len(self.stack) == 0:
             return
 
-        #detectedMap.markDetectedWalls(e, self.x, self.y)
         if self.currentNode in self.visited:
             return
+
         self.visited.append(self.currentNode)
+        
         print("currentNode: {}".format(self.currentNode))
         newDirections = [self.__addPositions(self.currentNode, v[i]) for i in range(0, 4)]
+        numberOfInvalidPositions = 0
         
         for nextPositionIndex in range(0, 4):
             nextX = newDirections[nextPositionIndex][0]
             nextY = newDirections[nextPositionIndex][1]
-            if not self.validPosition(nextX, nextY, detectedMap):
-                print("invalidPosition: ({}; {})".format(nextX, nextY))
-
             if self.validPosition(nextX, nextY, detectedMap):
                 self.stack.append([nextX, nextY])
+            else:
+                print("invalidPosition: ({}; {})".format(nextX, nextY))
+                numberOfInvalidPositions += 1
+        
+        print(self.stack)
+        if numberOfInvalidPositions == 4:
+            self.returning = True
+        else:
+            self.currentNode = self.stack.pop()
+            self.previousPositions[(self.currentNode[0], self.currentNode[1])] = (self.x, self.y)
+            self.x = self.currentNode[0]
+            self.y = self.currentNode[1]
 
-        self.currentNode = self.stack.pop()
-        self.x = self.currentNode[0]
-        self.y = self.currentNode[1]
+
         
                   
 # define a main function
@@ -287,8 +322,8 @@ def main():
         m.markDetectedWalls(e, d.x, d.y)
         screen.blit(m.image(d.x,d.y),(400,0))
         pygame.display.flip()
-        if pygame.time.get_ticks() - lastTime >= 150:
-            d.moveDSF(m, e)
+        if pygame.time.get_ticks() - lastTime >= 300:
+            d.moveDSF(m)
             lastTime = pygame.time.get_ticks()
        
     pygame.quit()

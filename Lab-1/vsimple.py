@@ -174,10 +174,11 @@ class Drone():
     def __init__(self, x, y):
         self.x = x
         self.y = y
+        self.x = 17
+        self.y = 5
         self.stack = [[self.x, self.y]]
         self.visited = []
-        self.currentNode = [self.x, self.y]
-        self.previousPositions = {}
+        self.previousPositions = {(self.x, self.y):[-1,-1]}
         self.returning = False
     
     def move(self, detectedMap):
@@ -210,58 +211,47 @@ class Drone():
         # mapping with DFS           
         #print("visited: {}".format(self.visited))
         if self.returning:
-            lastPathBranch = self.stack[-1]
-            print("lastPathBranch: {}".format(lastPathBranch))
-            neighbourCellsOfLastPathBranch = [self.__addPositions([self.stack[-1][0], self.stack[-1][1]], v[i]) for i in range(0,4)]
-            if [self.x, self.y] not in neighbourCellsOfLastPathBranch:
-                previousPosition = self.previousPositions[(self.x, self.y)]
-                print("Previous position: [{};{}]".format(self.x, self.y))
-                """
-                self.x = self.visited[-2][0]
-                self.y = self.visited[-2][1]
-                """
-                oldx = self.x 
-                oldy = self.y
-                self.x = previousPosition[0]
-                self.y = previousPosition[1]
-                self.previousPositions[(oldx, oldy)] = (self.x, self.y)
-                print("Current position: [{};{}]".format(self.x, self.y))
-            else:
+            validNeighbourCells = list(filter(lambda cell: self.validPosition(cell[0], cell[1], detectedMap), [self.__addPositions([self.x, self.y], v[i]) for i in range(0,4)]))
+            self.x, self.y = self.previousPositions[(self.x, self.y)]
+            print("returning; currentPos: {}; validNeighbourCells: {}".format([self.x, self.y], validNeighbourCells))
+            
+            if len(validNeighbourCells) > 0:
                 self.returning = False
-                self.currentNode = self.stack.pop()
-                self.x = self.currentNode[0]
-                self.y = self.currentNode[1]
-                print("returning=false")
-        
-        if len(self.stack) == 0:
-            return
-
-        if self.currentNode in self.visited:
-            return
-
-        self.visited.append(self.currentNode)
-        
-        print("currentNode: {}".format(self.currentNode))
-        newDirections = [self.__addPositions(self.currentNode, v[i]) for i in range(0, 4)]
-        numberOfInvalidPositions = 0
-        
-        for nextPositionIndex in range(0, 4):
-            nextX = newDirections[nextPositionIndex][0]
-            nextY = newDirections[nextPositionIndex][1]
-            if self.validPosition(nextX, nextY, detectedMap):
-                self.stack.append([nextX, nextY])
-            else:
-                print("invalidPosition: ({}; {})".format(nextX, nextY))
-                numberOfInvalidPositions += 1
-        
-        print(self.stack)
-        if numberOfInvalidPositions == 4:
-            self.returning = True
+                self.previousPositions[(validNeighbourCells[-1][0], validNeighbourCells[-1][1])] = [self.x, self.y]
+                self.x, self.y = validNeighbourCells[-1]
+                return
         else:
-            self.currentNode = self.stack.pop()
-            self.previousPositions[(self.currentNode[0], self.currentNode[1])] = (self.x, self.y)
-            self.x = self.currentNode[0]
-            self.y = self.currentNode[1]
+            if len(self.stack) == 0:
+                print("Finished.")
+                return
+
+            #print("currentNode: {}".format(self.currentNode))
+            newDirections = [self.__addPositions([self.x, self.y], v[i]) for i in range(0, 4)]
+            numberOfInvalidPositions = 0
+            
+            for nextPositionIndex in range(0, 4):
+                nextX = newDirections[nextPositionIndex][0]
+                nextY = newDirections[nextPositionIndex][1]
+                if self.validPosition(nextX, nextY, detectedMap):
+                    self.stack.append([nextX, nextY])
+                else:
+                    #print("invalidPosition: ({}; {})".format(nextX, nextY))
+                    numberOfInvalidPositions += 1
+        
+            self.visited.append([self.x, self.y])
+            
+            if numberOfInvalidPositions == 4:
+                self.returning = True
+            else:
+                newNode = self.stack.pop()
+                self.previousPositions[(newNode[0], newNode[1])] = [self.x, self.y]
+                self.x, self.y = newNode[0], newNode[1]
+                """
+                if newNode in self.visited:
+                    return
+                """
+            print("not returning; currentPos: {}; prevPos: {}".format([self.x, self.y], self.previousPositions[(self.x, self.y)]))
+        #uncomment this: print("prevpos: {}".format(self.previousPositions[(self.x, self.y)]))
 
 
         
@@ -322,7 +312,7 @@ def main():
         m.markDetectedWalls(e, d.x, d.y)
         screen.blit(m.image(d.x,d.y),(400,0))
         pygame.display.flip()
-        if pygame.time.get_ticks() - lastTime >= 300:
+        if pygame.time.get_ticks() - lastTime >= 50:
             d.moveDSF(m)
             lastTime = pygame.time.get_ticks()
        

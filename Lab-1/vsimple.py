@@ -1,3 +1,5 @@
+
+
 # import the pygame module, so you can use it
 import pickle,pygame,sys
 from pygame.locals import *
@@ -13,13 +15,17 @@ GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
+WIDTH = 20
+HEIGHT = 20
+
 #define directions
-UP = 0
+UP = 3
 DOWN = 2
 LEFT = 1
-RIGHT = 3
+RIGHT = 0
+
 #define indexes variations 
-v = [[-1, 0], [1, 0], [0, 1], [0, -1]]
+v = [[0, 1], [0, -1], [1, 0], [-1, 0]]
 
 
 class Environment():
@@ -95,18 +101,13 @@ class Environment():
         
 class DMap():
     def __init__(self):
-        self.__n = 20
-        self.__m = 20
+        self.__n = WIDTH
+        self.__m = HEIGHT
         self.surface = np.zeros((self.__n, self.__m))
+        
         for i in range(self.__n):
             for j in range(self.__m):
                 self.surface[i][j] = -1
-
-    def getWidth(self):
-        return self.__n
-
-    def getHeight(self):
-        return self.__m
         
     def markDetectedWalls(self, e, x, y):
         #   To DO
@@ -137,7 +138,6 @@ class DMap():
             self.surface[x][j] = 1
         
         j = y - 1
-
         if wals[RIGHT] > 0:
             while ((j >= 0) and (j >= y - wals[RIGHT])):
                 self.surface[x][j] = 0
@@ -145,7 +145,7 @@ class DMap():
         if (j >= 0):
             self.surface[x][j] = 1
         
-        return self.surface
+        return None
         
     def image(self, x, y):
         
@@ -166,22 +166,20 @@ class DMap():
         drona = pygame.image.load("drona.png")
         imagine.blit(drona, (y *20, x*20))
         return imagine
-
-
         
         
 class Drone():
     def __init__(self, x, y):
-        self.initialX = x
-        self.initialY = y
+        self.initialPosition = (x, y)
         self.x = x
         self.y = y
-        self.stack = [[self.x, self.y]]
+        self.stack = [(x, y)]
+        self.previousPositions = {}
+        #self.visited = [[0 for j in range(WIDTH)] for i in range(HEIGHT)]
         self.visited = []
-        self.previousPositions = {(self.x, self.y):[-1,-1]}
-        self.returning = False
-        self.done = False    
-
+        self.validDirections = 0
+        print("initial position: ({};{})".format(self.x, self.y))
+    
     def move(self, detectedMap):
         pressed_keys = pygame.key.get_pressed()
         if self.x > 0:
@@ -197,67 +195,42 @@ class Drone():
         if self.y < 19:        
               if pressed_keys[K_RIGHT] and detectedMap.surface[self.x][self.y+1]==0:
                   self.y = self.y + 1
-
-    def __addPositions(self, firstPosition, secondPosition):
-        return [firstPosition[0]+secondPosition[0], firstPosition[1]+secondPosition[1]]
-
-    def validPosition(self, x, y, detectedMap):
-        if x >= 0 and y >= 0 and x < detectedMap.getHeight() and y < detectedMap.getWidth() and detectedMap.surface[x][y] == 0 and [x,y] not in self.visited:
-            return True
-        return False
                   
+
     def moveDSF(self, detectedMap):
-        # TO DO!
-        #rewrite this function in such a way that you perform an automatic 
-        # mapping with DFS           
-        #print("visited: {}".format(self.visited))
-        if self.done:
-            return
+        self.analyseDirections(detectedMap)
 
-        if self.returning:
-            validNeighbourCells = list(filter(lambda cell: self.validPosition(cell[0], cell[1], detectedMap), [self.__addPositions([self.x, self.y], v[i]) for i in range(0,4)]))
-            try:
-                self.x, self.y = self.previousPositions[(self.x, self.y)]
-            except KeyError as ke:
-                print(ke)
-                print("Done.")
-                self.done = True
-                self.x = self.initialX
-                self.y = self.initialY
+        if self.validDirections == 0:
+            if self.x == self.initialPosition[0] and self.y == self.initialPosition[1]:
+                print("Finished.")
                 return
-
-            print("returning; currentPos: {}; validNeighbourCells: {}".format([self.x, self.y], validNeighbourCells))
-            
-            if len(validNeighbourCells) > 0:
-                self.returning = False
-                self.previousPositions[(validNeighbourCells[-1][0], validNeighbourCells[-1][1])] = [self.x, self.y]
-                self.x, self.y = validNeighbourCells[-1]
-                return
-        else:
-            newDirections = [self.__addPositions([self.x, self.y], v[i]) for i in range(0, 4)]
-            numberOfInvalidPositions = 0
-            
-            for nextPositionIndex in range(0, 4):
-                nextX = newDirections[nextPositionIndex][0]
-                nextY = newDirections[nextPositionIndex][1]
-                if self.validPosition(nextX, nextY, detectedMap):
-                    self.stack.append([nextX, nextY])
-                else:
-                    numberOfInvalidPositions += 1
-        
-            self.visited.append([self.x, self.y])
-            
-            if numberOfInvalidPositions == 4:
-                self.returning = True
             else:
-                newNode = self.stack.pop()
-                self.previousPositions[(newNode[0], newNode[1])] = [self.x, self.y]
-                self.x, self.y = newNode[0], newNode[1]
-            print("not returning; currentPos: {}; prevPos: {}".format([self.x, self.y], self.previousPositions[(self.x, self.y)]))
+                self.stack.append((self.previousPositions[(self.x, self.y)][0], self.previousPositions[(self.x, self.y)][1]))
+
+        self.validDirections = 0
+        self.x, self.y = self.stack.pop()
+        self.visited.append((self.x, self.y))
 
 
-        
+    def analyseDirections(self, detectedMap):
+        if self.y < 19 and detectedMap.surface[self.x][self.y+1] == 0 and (self.x, self.y+1) not in self.visited:
+            self.stack.append((self.x, self.y+1))
+            self.validDirections += 1
+            self.previousPositions[(self.x, self.y+1)] = (self.x, self.y)
+        elif self.y > 0 and detectedMap.surface[self.x][self.y-1] == 0 and (self.x, self.y-1) not in self.visited:
+            self.stack.append((self.x, self.y-1))
+            self.validDirections += 1
+            self.previousPositions[(self.x, self.y-1)] = (self.x, self.y)
+        elif self.x < 19 and detectedMap.surface[self.x+1][self.y] == 0 and (self.x+1, self.y) not in self.visited:
+            self.stack.append((self.x+1, self.y))
+            self.validDirections += 1
+            self.previousPositions[(self.x+1, self.y)] = (self.x, self.y)
+        elif self.x > 0 and detectedMap.surface[self.x-1][self.y] == 0 and (self.x-1, self.y) not in self.visited:
+            self.stack.append((self.x-1, self.y))
+            self.validDirections += 1
+            self.previousPositions[(self.x-1, self.y)] = (self.x, self.y)
                   
+
 # define a main function
 def main():
     #we create the environment
@@ -307,16 +280,16 @@ def main():
             """
             if event.type == KEYDOWN:
                 # use this function instead of move
-                d.moveDSF(m, e)
-                #d.move(m)
+                #d.moveDSF(m)
+                d.move(m)
             """
-        
+
         m.markDetectedWalls(e, d.x, d.y)
         screen.blit(m.image(d.x,d.y),(400,0))
         pygame.display.flip()
-        if pygame.time.get_ticks() - lastTime >= 500:
+        if pygame.time.get_ticks() - lastTime >= 350:
             d.moveDSF(m)
-            lastTime = pygame.time.get_ticks()
+            lastTime = pygame.time.get_ticks() 
        
     pygame.quit()
      

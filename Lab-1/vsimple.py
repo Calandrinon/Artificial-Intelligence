@@ -172,15 +172,16 @@ class DMap():
         
 class Drone():
     def __init__(self, x, y):
+        self.initialX = x
+        self.initialY = y
         self.x = x
         self.y = y
-        self.x = 17
-        self.y = 5
         self.stack = [[self.x, self.y]]
         self.visited = []
         self.previousPositions = {(self.x, self.y):[-1,-1]}
         self.returning = False
-    
+        self.done = False    
+
     def move(self, detectedMap):
         pressed_keys = pygame.key.get_pressed()
         if self.x > 0:
@@ -201,7 +202,7 @@ class Drone():
         return [firstPosition[0]+secondPosition[0], firstPosition[1]+secondPosition[1]]
 
     def validPosition(self, x, y, detectedMap):
-        if x >= 0 and y >= 0 and x < detectedMap.getHeight() and y < detectedMap.getWidth() and detectedMap.surface[x][y] != 1 and [x,y] not in self.visited:
+        if x >= 0 and y >= 0 and x < detectedMap.getHeight() and y < detectedMap.getWidth() and detectedMap.surface[x][y] == 0 and [x,y] not in self.visited:
             return True
         return False
                   
@@ -210,9 +211,21 @@ class Drone():
         #rewrite this function in such a way that you perform an automatic 
         # mapping with DFS           
         #print("visited: {}".format(self.visited))
+        if self.done:
+            return
+
         if self.returning:
             validNeighbourCells = list(filter(lambda cell: self.validPosition(cell[0], cell[1], detectedMap), [self.__addPositions([self.x, self.y], v[i]) for i in range(0,4)]))
-            self.x, self.y = self.previousPositions[(self.x, self.y)]
+            try:
+                self.x, self.y = self.previousPositions[(self.x, self.y)]
+            except KeyError as ke:
+                print(ke)
+                print("Done.")
+                self.done = True
+                self.x = self.initialX
+                self.y = self.initialY
+                return
+
             print("returning; currentPos: {}; validNeighbourCells: {}".format([self.x, self.y], validNeighbourCells))
             
             if len(validNeighbourCells) > 0:
@@ -221,11 +234,6 @@ class Drone():
                 self.x, self.y = validNeighbourCells[-1]
                 return
         else:
-            if len(self.stack) == 0:
-                print("Finished.")
-                return
-
-            #print("currentNode: {}".format(self.currentNode))
             newDirections = [self.__addPositions([self.x, self.y], v[i]) for i in range(0, 4)]
             numberOfInvalidPositions = 0
             
@@ -235,7 +243,6 @@ class Drone():
                 if self.validPosition(nextX, nextY, detectedMap):
                     self.stack.append([nextX, nextY])
                 else:
-                    #print("invalidPosition: ({}; {})".format(nextX, nextY))
                     numberOfInvalidPositions += 1
         
             self.visited.append([self.x, self.y])
@@ -246,12 +253,7 @@ class Drone():
                 newNode = self.stack.pop()
                 self.previousPositions[(newNode[0], newNode[1])] = [self.x, self.y]
                 self.x, self.y = newNode[0], newNode[1]
-                """
-                if newNode in self.visited:
-                    return
-                """
             print("not returning; currentPos: {}; prevPos: {}".format([self.x, self.y], self.previousPositions[(self.x, self.y)]))
-        #uncomment this: print("prevpos: {}".format(self.previousPositions[(self.x, self.y)]))
 
 
         
@@ -312,7 +314,7 @@ def main():
         m.markDetectedWalls(e, d.x, d.y)
         screen.blit(m.image(d.x,d.y),(400,0))
         pygame.display.flip()
-        if pygame.time.get_ticks() - lastTime >= 50:
+        if pygame.time.get_ticks() - lastTime >= 500:
             d.moveDSF(m)
             lastTime = pygame.time.get_ticks()
        

@@ -175,10 +175,9 @@ class Drone():
         self.y = y
         self.stack = [(x, y)]
         self.previousPositions = {}
-        #self.visited = [[0 for j in range(WIDTH)] for i in range(HEIGHT)]
         self.visited = []
         self.validDirections = 0
-        print("initial position: ({};{})".format(self.x, self.y))
+        print("initial position: {}".format(self.initialPosition))
     
     def move(self, detectedMap):
         pressed_keys = pygame.key.get_pressed()
@@ -201,7 +200,7 @@ class Drone():
         self.analyseDirections(detectedMap)
 
         if self.validDirections == 0:
-            if self.x == self.initialPosition[0] and self.y == self.initialPosition[1]:
+            if (self.x, self.y) == self.initialPosition:
                 print("Finished.")
                 return
             else:

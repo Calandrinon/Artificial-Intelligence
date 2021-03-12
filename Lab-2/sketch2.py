@@ -5,6 +5,7 @@ from random import random, randint
 import numpy as np
 import heapq
 import math
+import time
 
 # Greedy BFS algorithm path is RED 
 # A* algorithm path is GREEN
@@ -117,7 +118,6 @@ def getPath(finalNode, initialNode, predecessors):
     while currentNode != initialNode:
         currentNode = predecessors[currentNode]
         path = [currentNode] + path
-        print(path)
     
     path.append(finalNode)
     return path
@@ -138,6 +138,7 @@ def searchAStar(mapM, droneD, initialX, initialY, finalX, finalY):
     # TO DO 
     # implement the search function and put it in controller
     # returns a list of moves as a list of pairs [x,y] 
+    startTime = time.time()
 
     openSet = []
     initialNode = (initialX, initialY)
@@ -159,6 +160,8 @@ def searchAStar(mapM, droneD, initialX, initialY, finalX, finalY):
         currentNode = heapq.heappop(openSet)[1]
 
         if currentNode == (finalX, finalY):
+            endTime = time.time()
+            print("A* -> Execution time: {}".format(endTime-startTime))
             return getPath(finalNode, initialNode, predecessors)
 
         validNodes = 0
@@ -178,7 +181,10 @@ def searchAStar(mapM, droneD, initialX, initialY, finalX, finalY):
                 fScore[neighbourNode] = gScore[neighbourNode] + heuristic(neighbourNode, (finalX, finalY))
                 if neighbourNode not in openSet:
                     heapq.heappush(openSet, (fScore[neighbourNode], neighbourNode))
-        print("currentNode: {}; validNodes: {};".format(currentNode, validNodes))
+        #print("currentNode: {}; validNodes: {};".format(currentNode, validNodes))
+    
+    endTime = time.time()
+    print("A* -> Execution time: {}".format(endTime-startTime))
     return "Failed."
     
     
@@ -187,6 +193,7 @@ def searchGreedy(mapM, droneD, initialX, initialY, finalX, finalY):
     # implement the search function and put it in controller
     # returns a list of moves as a list of pairs [x,y]
 
+    startTime = time.time()
     openSet = []
     initialNode = (initialX, initialY)
     finalNode = (finalX, finalY)
@@ -200,6 +207,8 @@ def searchGreedy(mapM, droneD, initialX, initialY, finalX, finalY):
         currentNode = heapq.heappop(openSet)[1]
 
         if currentNode == (finalX, finalY):
+            endTime = time.time()
+            print("Greedy -> Execution time: {}".format(endTime-startTime))
             return getPath(finalNode, initialNode, predecessors)
 
         validNodes = 0
@@ -217,7 +226,10 @@ def searchGreedy(mapM, droneD, initialX, initialY, finalX, finalY):
             heapq.heappush(openSet, (heuristic(currentNode, finalNode), neighbourNode))
             predecessors[neighbourNode] = currentNode
 
-        print("currentNode: {}; validNodes: {};".format(currentNode, validNodes))
+        #print("currentNode: {}; validNodes: {};".format(currentNode, validNodes))
+
+    endTime = time.time()
+    print("Greedy -> Execution time: {}".format(endTime-startTime))
     return "Failed."
 
 def dummysearch():

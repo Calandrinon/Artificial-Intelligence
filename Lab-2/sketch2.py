@@ -6,6 +6,9 @@ import numpy as np
 import heapq
 import math
 
+# Greedy BFS algorithm path is RED 
+# A* algorithm path is GREEN
+
 
 #Creating some colors
 BLUE  = (0, 0, 255)
@@ -114,6 +117,7 @@ def getPath(finalNode, initialNode, predecessors):
     while currentNode != initialNode:
         currentNode = predecessors[currentNode]
         path = [currentNode] + path
+        print(path)
     
     path.append(finalNode)
     return path
@@ -182,15 +186,47 @@ def searchGreedy(mapM, droneD, initialX, initialY, finalX, finalY):
     # TO DO 
     # implement the search function and put it in controller
     # returns a list of moves as a list of pairs [x,y]
-    pass
+
+    openSet = []
+    initialNode = (initialX, initialY)
+    finalNode = (finalX, finalY)
+    visited = []
+
+    predecessors = {}
+    heapq.heappush(openSet, (heuristic(initialNode, finalNode), initialNode))
+    print("Initial position: {}; Final position: {}".format(initialNode, finalNode))
+
+    while len(openSet) != 0:
+        currentNode = heapq.heappop(openSet)[1]
+
+        if currentNode == (finalX, finalY):
+            return getPath(finalNode, initialNode, predecessors)
+
+        validNodes = 0
+        minimumHScore = float('inf')
+        for offset in range(0, 4):
+            neighbourX = offsets[offset][0] + currentNode[0]
+            neighbourY = offsets[offset][1] + currentNode[1]
+            neighbourNode = (neighbourX, neighbourY)
+
+            if neighbourNode in visited or not validNode(neighbourX, neighbourY) or mapM.surface[neighbourX][neighbourY] != 0: # if the node can't be accessed
+                continue 
+
+            validNodes += 1
+            visited.append(neighbourNode)
+            heapq.heappush(openSet, (heuristic(currentNode, finalNode), neighbourNode))
+            predecessors[neighbourNode] = currentNode
+
+        print("currentNode: {}; validNodes: {};".format(currentNode, validNodes))
+    return "Failed."
 
 def dummysearch():
     #example of some path in test1.map from [5,7] to [7,11]
     return [[5,7],[5,8],[5,9],[5,10],[5,11],[6,11],[7,11]]
     
-def displayWithPath(image, path):
+def displayWithPath(image, path, color):
     mark = pygame.Surface((20,20))
-    mark.fill(GREEN)
+    mark.fill(color)
     for move in path:
         image.blit(mark, (move[1] *20, move[0] * 20))
         
@@ -217,12 +253,12 @@ def main():
     # we position the drone somewhere in the area
     x = randint(0, 19)
     y = randint(0, 19)
-    """
-    x = 9
-    y = 1
-    """
+    while m.surface[x][y]:
+        (x, y) = (randint(0,19), randint(0,19))
+
     #create drona
     d = Drone(x, y)
+    d2 = Drone(x, y)
     
     # create a surface on screen that has the size of 400 x 480
     screen = pygame.display.set_mode((400,400))
@@ -230,25 +266,31 @@ def main():
     
     # define a variable to control the main loop
     running = True
+    running2 = True
     lastTime = pygame.time.get_ticks()
     finalPosition = (randint(0,19), randint(0,19))
     while m.surface[finalPosition[0]][finalPosition[1]]:
         finalPosition = (randint(0,19), randint(0,19))
 
-    path = searchAStar(m, d, x, y, finalPosition[0], finalPosition[1])
-    #path = searchAStar(m, d, x, y, 12, 2)
+    #path = searchAStar(m, d, x, y, finalPosition[0], finalPosition[1])
+    path = searchGreedy(m, d, x, y, finalPosition[0], finalPosition[1])
+    path2 = searchAStar(m, d2, x, y, finalPosition[0], finalPosition[1])
+    print("Done computing.")
     if path == "Failed.":
         print(path)
         print(m.surface)
         return
+
+    if path2 == "Failed.":
+        print(path2)
+        print(m.surface)
+        return
     pathCopy = path.copy()
-    print("The correct path: {}".format(path))
-    for node in path:
-        m.surface[node[0]][node[1]] = 9
-    #print(m.surface)
-    #return
-    # main loop
-    while running:
+    pathCopy2 = path2.copy()
+    print("The non-optimal greedy path of length {} (red): {}".format(len(path), path))
+    print("The correct A* path of length {} (green): {}".format(len(path2), path2))
+
+    while running and running2:
         # event handling, gets all event from the event queue
         for event in pygame.event.get():
             # only do something if the event is of type QUIT
@@ -261,6 +303,7 @@ def main():
         
         
         screen.blit(d.mapWithDrone(m.image()),(0,0))
+        screen.blit(d2.mapWithDrone(m.image()),(0,0))
         if pygame.time.get_ticks() - lastTime >= 300:
             lastTime = pygame.time.get_ticks()
             # change drone coordinates
@@ -269,12 +312,20 @@ def main():
             except IndexError as ie:
                 print("Done.")
                 running = False
+
+            try:
+                d2.x, d2.y = path2.pop(0)
+            except IndexError as ie:
+                print("Done.")
+                running2 = False
             #print("PATH: {}", path.pop())
 
         pygame.display.flip()
        
     path = pathCopy 
-    screen.blit(displayWithPath(m.image(), path),(0,0))
+    path2 = pathCopy2 
+    screen.blit(displayWithPath(displayWithPath(m.image(), path, RED), path2, GREEN),(0,0))
+    #screen.blit(displayWithPath(m.image(), path),(0,0))
     
     pygame.display.flip()
     time.sleep(5)

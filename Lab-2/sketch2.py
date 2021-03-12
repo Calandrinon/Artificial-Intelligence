@@ -1,10 +1,10 @@
-
-
 # import the pygame module, so you can use it
 import pickle,pygame,time
 from pygame.locals import *
 from random import random, randint
 import numpy as np
+import heapq
+import math
 
 
 #Creating some colors
@@ -23,6 +23,7 @@ RIGHT = 3
 
 #define indexes variations 
 v = [[-1, 0], [1, 0], [0, 1], [0, -1]]
+offsets = [[0, 1], [1, 0], [0, -1], [-1, 0]]
 
 
 class Map():
@@ -30,6 +31,12 @@ class Map():
         self.n = n
         self.m = m
         self.surface = np.zeros((self.n, self.m))
+
+    def getWidth(self):
+        return self.n
+
+    def getHeight(self):
+        return self.m
     
     def randomMap(self, fill = 0.2):
         for i in range(self.n):
@@ -99,13 +106,78 @@ class Drone():
         return mapImage
 
 
+def getPath(finalNode, initialNode, predecessors):
+    currentNode = finalNode
+    print("finalNode: {}".format(finalNode))
+    path = []
+    
+    while currentNode != initialNode:
+        currentNode = predecessors[currentNode]
+        path = [currentNode] + path
+    
+    path.append(finalNode)
+    return path
+
+
+def heuristic(node, goalNode):
+    # This is just the straight-line distance between (x,y) and the goal
+    return math.sqrt((node[0]-goalNode[0])**2 + (node[1]-goalNode[1])**2)
+
+
+def validNode(x, y):
+    if x >= 0 and x <= 19 and y >= 0 and y <= 19:
+        return True
+    return False
+
+
 def searchAStar(mapM, droneD, initialX, initialY, finalX, finalY):
     # TO DO 
     # implement the search function and put it in controller
     # returns a list of moves as a list of pairs [x,y] 
-    
-    pass
 
+    openSet = []
+    initialNode = (initialX, initialY)
+    finalNode = (finalX, finalY)
+
+    predecessors = {}
+    gScore = {}
+    fScore = {}
+    for i in range(0, mapM.getWidth()):
+        for j in range(0, mapM.getHeight()):
+            gScore[(i, j)] = float('inf')
+            fScore[(i, j)] = float('inf')
+    gScore[initialNode] = 0
+    fScore[initialNode] = heuristic(initialNode, finalNode)
+    heapq.heappush(openSet, (fScore[initialNode], initialNode))
+    print("Initial position: {}; Final position: {}".format(initialNode, finalNode))
+
+    while len(openSet) != 0:
+        currentNode = heapq.heappop(openSet)[1]
+
+        if currentNode == (finalX, finalY):
+            return getPath(finalNode, initialNode, predecessors)
+
+        validNodes = 0
+        for offset in range(0, 4):
+            neighbourX = offsets[offset][0] + currentNode[0]
+            neighbourY = offsets[offset][1] + currentNode[1]
+            neighbourNode = (neighbourX, neighbourY)
+
+            if not validNode(neighbourX, neighbourY) or mapM.surface[neighbourX][neighbourY] != 0: # if the node can't be accessed
+                continue 
+
+            validNodes += 1
+            possibleGScore = gScore[currentNode] + 1 
+            if possibleGScore < gScore[neighbourNode]:
+                predecessors[neighbourNode] = currentNode
+                gScore[neighbourNode] = possibleGScore
+                fScore[neighbourNode] = gScore[neighbourNode] + heuristic(neighbourNode, (finalX, finalY))
+                if neighbourNode not in openSet:
+                    heapq.heappush(openSet, (fScore[neighbourNode], neighbourNode))
+        print("currentNode: {}; validNodes: {};".format(currentNode, validNodes))
+    return "Failed."
+    
+    
 def searchGreedy(mapM, droneD, initialX, initialY, finalX, finalY):
     # TO DO 
     # implement the search function and put it in controller
@@ -145,20 +217,36 @@ def main():
     # we position the drone somewhere in the area
     x = randint(0, 19)
     y = randint(0, 19)
-    
+    """
+    x = 9
+    y = 1
+    """
     #create drona
     d = Drone(x, y)
-    
-    
     
     # create a surface on screen that has the size of 400 x 480
     screen = pygame.display.set_mode((400,400))
     screen.fill(WHITE)
     
-    
     # define a variable to control the main loop
     running = True
-     
+    lastTime = pygame.time.get_ticks()
+    finalPosition = (randint(0,19), randint(0,19))
+    while m.surface[finalPosition[0]][finalPosition[1]]:
+        finalPosition = (randint(0,19), randint(0,19))
+
+    path = searchAStar(m, d, x, y, finalPosition[0], finalPosition[1])
+    #path = searchAStar(m, d, x, y, 12, 2)
+    if path == "Failed.":
+        print(path)
+        print(m.surface)
+        return
+    pathCopy = path.copy()
+    print("The correct path: {}".format(path))
+    for node in path:
+        m.surface[node[0]][node[1]] = 9
+    #print(m.surface)
+    #return
     # main loop
     while running:
         # event handling, gets all event from the event queue
@@ -173,9 +261,19 @@ def main():
         
         
         screen.blit(d.mapWithDrone(m.image()),(0,0))
+        if pygame.time.get_ticks() - lastTime >= 300:
+            lastTime = pygame.time.get_ticks()
+            # change drone coordinates
+            try:
+                d.x, d.y = path.pop(0)
+            except IndexError as ie:
+                print("Done.")
+                running = False
+            #print("PATH: {}", path.pop())
+
         pygame.display.flip()
        
-    path = dummysearch()
+    path = pathCopy 
     screen.blit(displayWithPath(m.image(), path),(0,0))
     
     pygame.display.flip()

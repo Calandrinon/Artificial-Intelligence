@@ -17,7 +17,6 @@ RIGHT = 3
 
 #define indexes variations 
 v = [[-1, 0], [1, 0], [0, 1], [0, -1]]
-offsets = [[0, 1], [1, 0], [0, -1], [-1, 0]]
 
 
 class Map():

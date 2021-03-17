@@ -59,17 +59,17 @@ class UI:
         lastTime = pygame.time.get_ticks()
 
 
-        path2, executionTimeAStar = self.controller.searchAStar(self.controller.getMap(), self.AStarDrone, self.x, self.y, self.finalPosition[0], self.finalPosition[1])
+        path, executionTimeAStar = self.controller.searchAStar(self.controller.getMap(), self.AStarDrone, self.x, self.y, self.finalPosition[0], self.finalPosition[1])
         print("A* -> Execution time: {}".format(executionTimeAStar))
 
-        if path2 == "Failed.":
-            print(path2)
+        if path == "Failed.":
+            print(path)
             print(self.controller.getMap().surface)
             return
 
-        pathCopy2 = path2.copy()
+        pathCopy = path.copy()
         print("Initial position: {}; Final position: {}".format(self.initialPosition, self.finalPosition))
-        print("The A* path of length {} (green): {}".format(len(path2), path2))
+        print("The A* path of length {} (green): {}".format(len(path), path))
 
         while runningAStar:
             for event in pygame.event.get():
@@ -81,14 +81,14 @@ class UI:
                 lastTime = pygame.time.get_ticks()
 
                 try:
-                    self.AStarDrone.x, self.AStarDrone.y = path2.pop(0)
+                    self.AStarDrone.x, self.AStarDrone.y = path.pop(0)
                 except IndexError as ie:
                     print("Done.")
                     runningAStar = False
 
             pygame.display.flip()
         
-        self.screen.blit(self.controller.displayWithPath(self.controller.getMap().image(), pathCopy2, GREEN),(0,0))
+        self.screen.blit(self.controller.displayWithPath(self.controller.getMap().image(), pathCopy, GREEN),(0,0))
         
         pygame.display.flip()
         time.sleep(5)

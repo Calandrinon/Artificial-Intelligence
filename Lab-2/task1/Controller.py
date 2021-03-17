@@ -27,7 +27,6 @@ class Controller:
 
 
     def heuristic(self, node, goalNode):
-        # This is just the straight-line distance between (x,y) and the goal
         return math.sqrt((node[0]-goalNode[0])**2 + (node[1]-goalNode[1])**2)
 
 
@@ -45,15 +44,15 @@ class Controller:
         finalNode = (finalX, finalY)
 
         predecessors = {}
-        gScore = {}
-        fScore = {}
+        gValue = {}
+        fValue = {}
         for i in range(0, mapM.getWidth()):
             for j in range(0, mapM.getHeight()):
-                gScore[(i, j)] = float('inf')
-                fScore[(i, j)] = float('inf')
-        gScore[initialNode] = 0
-        fScore[initialNode] = self.heuristic(initialNode, finalNode)
-        heapq.heappush(openSet, (fScore[initialNode], initialNode))
+                gValue[(i, j)] = float('inf')
+                fValue[(i, j)] = float('inf')
+        gValue[initialNode] = 0
+        fValue[initialNode] = self.heuristic(initialNode, finalNode)
+        heapq.heappush(openSet, (fValue[initialNode], initialNode))
         offsets = [[0, 1], [1, 0], [0, -1], [-1, 0]]
 
         while len(openSet) != 0:
@@ -71,13 +70,13 @@ class Controller:
                 if not self.validNode(neighbourX, neighbourY) or mapM.surface[neighbourX][neighbourY] != 0: # if the node can't be accessed
                     continue 
 
-                possibleGScore = gScore[currentNode] + 1 
-                if possibleGScore < gScore[neighbourNode]:
+                possibleGValue = gValue[currentNode] + 1 
+                if possibleGValue < gValue[neighbourNode]:
                     predecessors[neighbourNode] = currentNode
-                    gScore[neighbourNode] = possibleGScore
-                    fScore[neighbourNode] = gScore[neighbourNode] + self.heuristic(neighbourNode, (finalX, finalY))
+                    gValue[neighbourNode] = possibleGValue
+                    fValue[neighbourNode] = gValue[neighbourNode] + self.heuristic(neighbourNode, (finalX, finalY))
                     if neighbourNode not in openSet:
-                        heapq.heappush(openSet, (fScore[neighbourNode], neighbourNode))
+                        heapq.heappush(openSet, (fValue[neighbourNode], neighbourNode))
         
         raise FailedSearchException("The algorithm failed because the final position could not be reached.\nCheck if the final position is reachable.")
         
@@ -156,7 +155,7 @@ class Controller:
         initialPosition = (x, y)
 
         finalPosition = (randint(0,19), randint(0,19))
-        while self.getMap().surface[finalPosition[0]][finalPosition[1]]:
+        while self.getMap().surface[finalPosition[0]][finalPosition[1]] or self.heuristic(initialPosition, finalPosition) < math.sqrt(10**2+10**2):
             finalPosition = (randint(0,19), randint(0,19))
 
         return [initialPosition, finalPosition]

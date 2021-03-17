@@ -77,7 +77,7 @@ class UI:
                     self.running = False
             
             self.screen.blit(self.AStarDrone.mapWithDrone(self.controller.getMap().image()),(0,0))
-            if pygame.time.get_ticks() - lastTime >= 300:
+            if pygame.time.get_ticks() - lastTime >= ALGORITHM_RATE:
                 lastTime = pygame.time.get_ticks()
 
                 try:
@@ -117,7 +117,7 @@ class UI:
                     self.running = False
             
             self.screen.blit(self.greedyDrone.mapWithDrone(self.controller.getMap().image()),(0,0))
-            if pygame.time.get_ticks() - lastTime >= 300:
+            if pygame.time.get_ticks() - lastTime >= ALGORITHM_RATE:
                 lastTime = pygame.time.get_ticks()
 
                 try:
@@ -166,26 +166,23 @@ class UI:
         print("The non-optimal greedy path of length {} (red): {}".format(len(path), path))
         print("The correct A* path of length {} (green): {}".format(len(path2), path2))
 
-        while runningAStar and runningGreedy:
+        while runningAStar or runningGreedy:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
             
-            self.screen.blit(self.greedyDrone.mapWithDrone(self.controller.getMap().image()),(0,0))
-            self.screen.blit(self.AStarDrone.mapWithDrone(self.controller.getMap().image()),(0,0))
+            self.screen.blit(self.AStarDrone.mapWithDrones(self.controller.getMap().image(), self.greedyDrone),(0,0))
             if pygame.time.get_ticks() - lastTime >= ALGORITHM_RATE:
                 lastTime = pygame.time.get_ticks()
 
                 try:
                     self.greedyDrone.x, self.greedyDrone.y = path.pop(0)
                 except IndexError as ie:
-                    print("Done.")
                     runningGreedy = False
 
                 try:
                     self.AStarDrone.x, self.AStarDrone.y = path2.pop(0)
                 except IndexError as ie:
-                    print("Done.")
                     runningAStar = False
 
             pygame.display.flip()

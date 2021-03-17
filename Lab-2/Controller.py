@@ -79,7 +79,7 @@ class Controller:
                     if neighbourNode not in openSet:
                         heapq.heappush(openSet, (fScore[neighbourNode], neighbourNode))
         
-        raise FailedSearchException("The A* algorithm failed because the final position could not be reached.\nCheck if the final position is reachable.")
+        raise FailedSearchException("The algorithm failed because the final position could not be reached.\nCheck if the final position is reachable.")
         
         
     def searchGreedy(self, mapM, droneD, initialX, initialY, finalX, finalY):
@@ -113,7 +113,7 @@ class Controller:
                 heapq.heappush(openSet, (self.heuristic(currentNode, finalNode), neighbourNode))
                 predecessors[neighbourNode] = currentNode
 
-        raise FailedSearchException("The greedy BFS algorithm failed because the final position could not be reached.\nCheck if the final position is reachable.")
+        raise FailedSearchException("The algorithm failed because the final position could not be reached.\nCheck if the final position is reachable.")
 
     def dummysearch(self):
         #example of some path in test1.map from [5,7] to [7,11]

@@ -64,6 +64,10 @@ class Drone():
         self.x = x
         self.y = y
 
+
+    def getPosition(self):
+        return (self.x, self.y)
+
     
     def move(self, detectedMap):
         pressed_keys = pygame.key.get_pressed()
@@ -85,4 +89,13 @@ class Drone():
         drona = pygame.image.load("drona.png")
         mapImage.blit(drona, (self.y * 20, self.x * 20))
         
+        return mapImage
+
+
+    def mapWithDrones(self, mapImage, otherDrone):
+        drona = pygame.image.load("drona.png")
+        mapImage.blit(drona, (self.y * 20, self.x * 20))
+        otherPosition = otherDrone.getPosition()
+        mapImage.blit(drona, (otherPosition[1] * 20, otherPosition[0] * 20))
+    
         return mapImage

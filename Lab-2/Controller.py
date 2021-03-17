@@ -3,6 +3,7 @@ import time
 import heapq
 import math
 import pygame
+from Exceptions import *
 from random import random, randint
 
 class Controller:
@@ -78,7 +79,7 @@ class Controller:
                     if neighbourNode not in openSet:
                         heapq.heappush(openSet, (fScore[neighbourNode], neighbourNode))
         
-        return "Failed."
+        raise FailedSearchException("The A* algorithm failed because the final position could not be reached.\nCheck if the final position is reachable.")
         
         
     def searchGreedy(self, mapM, droneD, initialX, initialY, finalX, finalY):
@@ -112,7 +113,7 @@ class Controller:
                 heapq.heappush(openSet, (self.heuristic(currentNode, finalNode), neighbourNode))
                 predecessors[neighbourNode] = currentNode
 
-        return "Failed."
+        raise FailedSearchException("The greedy BFS algorithm failed because the final position could not be reached.\nCheck if the final position is reachable.")
 
     def dummysearch(self):
         #example of some path in test1.map from [5,7] to [7,11]

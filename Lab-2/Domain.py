@@ -3,7 +3,7 @@ import pickle,pygame,time
 from constants import *
 
 class Map():
-    def __init__(self, n = 20, m = 20):
+    def __init__(self, n = MAP_HEIGHT, m = MAP_WIDTH):
         self.n = n
         self.m = m
         self.surface = np.zeros((self.n, self.m))

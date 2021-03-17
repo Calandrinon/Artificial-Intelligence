@@ -1,6 +1,7 @@
 import pygame, time
 from pygame.locals import *
 from constants import *
+from Exceptions import FailedSearchException
 
 class UI:
     def __init__(self, controller):
@@ -8,6 +9,19 @@ class UI:
         self.initializePygame()
         self.greedyDrone = self.controller.getGreedyDrone()
         self.AStarDrone = self.controller.getAStarDrone()
+        self.menuRunning = True
+
+
+    def quit(self):
+        self.menuRunning = False
+
+
+    def displayMenu(self):
+        print("1. Run the A* algorithm.")
+        print("2. Run the Greedy BFS algorithm.")
+        print("3. Run both algorithms with random initial and final positions.")
+        print("4. Run both algorithms with given initial and final positions.")
+        print("0. Exit.")
     
     
     def initializePygame(self):
@@ -23,7 +37,7 @@ class UI:
         self.x = int(input("Enter the initial X coordinate: "))
         self.y = int(input("Enter the initial Y coordinate: "))
         
-        while self.controller.getMap().surface[self.x][self.y]:
+        while self.controller.getMap().surface[self.x][self.y] or not self.controller.validNode(self.x, self.y):
             print("Invalid position!")
             self.x = int(input("Enter the initial X coordinate: "))
             self.y = int(input("Enter the initial Y coordinate: "))
@@ -32,7 +46,7 @@ class UI:
         finalX = int(input("Enter the final X coordinate: "))
         finalY = int(input("Enter the final Y coordinate: "))
         self.finalPosition = (finalX, finalY)
-        while self.controller.getMap().surface[self.finalPosition[0]][self.finalPosition[1]]:
+        while self.controller.getMap().surface[self.finalPosition[0]][self.finalPosition[1]] or not self.controller.validNode(self.finalPosition[0], self.finalPosition[1]):
             print("Invalid position!")
             finalX = int(input("Enter the final X coordinate: "))
             finalY = int(input("Enter the final Y coordinate: "))
@@ -43,6 +57,7 @@ class UI:
         self.readPositions()
         runningAStar = True
         lastTime = pygame.time.get_ticks()
+
 
         path2, executionTimeAStar = self.controller.searchAStar(self.controller.getMap(), self.AStarDrone, self.x, self.y, self.finalPosition[0], self.finalPosition[1])
         print("A* -> Execution time: {}".format(executionTimeAStar))
@@ -77,10 +92,10 @@ class UI:
         
         pygame.display.flip()
         time.sleep(5)
-        pygame.quit()
 
 
     def runGreedySearch(self):
+        self.readPositions()
         runningGreedy = True
         lastTime = pygame.time.get_ticks()
 
@@ -117,12 +132,15 @@ class UI:
         
         pygame.display.flip()
         time.sleep(5)
-        pygame.quit()
 
     
-    def runGreedyAndAStarSearchWithRandomPositions(self):
-        self.initialPosition, self.finalPosition = self.controller.generateStartAndFinishPosition()
-        self.x, self.y = self.initialPosition
+    def runBothGreedyAndAStarSearch(self, initialPosition, finalPosition, random=True):
+        if random:
+            self.initialPosition, self.finalPosition = self.controller.generateStartAndFinishPosition()
+            self.x, self.y = self.initialPosition
+        else:
+            self.initialPosition = initialPosition
+            self.finalPosition = finalPosition
         runningAStar = True
         runningGreedy = True
         lastTime = pygame.time.get_ticks()
@@ -176,8 +194,28 @@ class UI:
         
         pygame.display.flip()
         time.sleep(5)
-        pygame.quit()
+
+    
+    def runBothGreedyAndAStarSearchRandomly(self):
+        self.runBothGreedyAndAStarSearch(None, None)
+
+
+    def runBothGreedyAndAStarSearchWithGivenPositions(self):
+        self.readPositions()
+        self.runBothGreedyAndAStarSearch(self.initialPosition, self.finalPosition, random=False)
     
 
     def run(self):
-        self.runGreedyAndAStarSearchWithRandomPositions()
+        options = [self.quit, self.runAStarSearch, self.runGreedySearch, self.runBothGreedyAndAStarSearchRandomly, self.runBothGreedyAndAStarSearchWithGivenPositions]
+
+        while self.menuRunning:
+            self.displayMenu()
+
+            option = int(input("Enter an option: "))
+            if option > len(options):
+                print("Enter an option between 0 and {}".format(len(options)))
+
+            try:
+                options[option]()
+            except FailedSearchException as fe:
+                print(fe)

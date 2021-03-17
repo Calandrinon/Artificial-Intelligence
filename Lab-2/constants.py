@@ -5,6 +5,9 @@ GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
+MAP_WIDTH = 20
+MAP_HEIGHT = 20
+
 UP = 0
 DOWN = 2
 LEFT = 1

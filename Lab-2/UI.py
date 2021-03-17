@@ -1,20 +1,14 @@
-import pickle,pygame,time
+import pygame, time
 from pygame.locals import *
-from random import random, randint
-from Domain import *
-import numpy as np
-import heapq
-import math
-import time
+from constants import *
 
 class UI:
     def __init__(self, controller):
         self.controller = controller 
         self.initializePygame()
-        self.generateStartAndFinishPosition()
-        self.d = Drone(self.x, self.y)
-        self.d2 = Drone(self.x, self.y)
-
+        self.greedyDrone = self.controller.getGreedyDrone()
+        self.AStarDrone = self.controller.getAStarDrone()
+    
     
     def initializePygame(self):
         pygame.init()
@@ -23,18 +17,6 @@ class UI:
         self.controller.getMap().loadMap("test1.map")
         self.screen = pygame.display.set_mode((400,400))
         self.screen.fill(WHITE)
-
-
-    def generateStartAndFinishPosition(self):
-        self.x = randint(0, 19)
-        self.y = randint(0, 19)
-        while self.controller.getMap().surface[self.x][self.y]:
-            (self.x, self.y) = (randint(0,19), randint(0,19))
-        self.initialPosition = (self.x, self.y)
-
-        self.finalPosition = (randint(0,19), randint(0,19))
-        while self.controller.getMap().surface[self.finalPosition[0]][self.finalPosition[1]]:
-            self.finalPosition = (randint(0,19), randint(0,19))
 
 
     def readPositions(self):
@@ -62,7 +44,7 @@ class UI:
         runningAStar = True
         lastTime = pygame.time.get_ticks()
 
-        path2, executionTimeAStar = self.controller.searchAStar(self.controller.getMap(), self.d2, self.x, self.y, self.finalPosition[0], self.finalPosition[1])
+        path2, executionTimeAStar = self.controller.searchAStar(self.controller.getMap(), self.AStarDrone, self.x, self.y, self.finalPosition[0], self.finalPosition[1])
         print("A* -> Execution time: {}".format(executionTimeAStar))
 
         if path2 == "Failed.":
@@ -79,12 +61,12 @@ class UI:
                 if event.type == pygame.QUIT:
                     self.running = False
             
-            self.screen.blit(self.d2.mapWithDrone(self.controller.getMap().image()),(0,0))
+            self.screen.blit(self.AStarDrone.mapWithDrone(self.controller.getMap().image()),(0,0))
             if pygame.time.get_ticks() - lastTime >= 300:
                 lastTime = pygame.time.get_ticks()
 
                 try:
-                    self.d2.x, self.d2.y = path2.pop(0)
+                    self.AStarDrone.x, self.AStarDrone.y = path2.pop(0)
                 except IndexError as ie:
                     print("Done.")
                     runningAStar = False
@@ -102,7 +84,7 @@ class UI:
         runningGreedy = True
         lastTime = pygame.time.get_ticks()
 
-        path, executionTimeGreedy = self.controller.searchGreedy(self.controller.getMap(), self.d, self.x, self.y, self.finalPosition[0], self.finalPosition[1])
+        path, executionTimeGreedy = self.controller.searchGreedy(self.controller.getMap(), self.greedyDrone, self.x, self.y, self.finalPosition[0], self.finalPosition[1])
         print("Greedy -> Execution time: {}".format(executionTimeGreedy))
 
         if path == "Failed.":
@@ -119,12 +101,12 @@ class UI:
                 if event.type == pygame.QUIT:
                     self.running = False
             
-            self.screen.blit(self.d.mapWithDrone(self.controller.getMap().image()),(0,0))
+            self.screen.blit(self.greedyDrone.mapWithDrone(self.controller.getMap().image()),(0,0))
             if pygame.time.get_ticks() - lastTime >= 300:
                 lastTime = pygame.time.get_ticks()
 
                 try:
-                    self.d.x, self.d.y = path.pop(0)
+                    self.greedyDrone.x, self.greedyDrone.y = path.pop(0)
                 except IndexError as ie:
                     print("Done.")
                     runningGreedy = False
@@ -139,12 +121,14 @@ class UI:
 
     
     def runGreedyAndAStarSearchWithRandomPositions(self):
+        self.initialPosition, self.finalPosition = self.controller.generateStartAndFinishPosition()
+        self.x, self.y = self.initialPosition
         runningAStar = True
         runningGreedy = True
         lastTime = pygame.time.get_ticks()
 
-        path, executionTimeGreedy = self.controller.searchGreedy(self.controller.getMap(), self.d, self.x, self.y, self.finalPosition[0], self.finalPosition[1])
-        path2, executionTimeAStar = self.controller.searchAStar(self.controller.getMap(), self.d2, self.x, self.y, self.finalPosition[0], self.finalPosition[1])
+        path, executionTimeGreedy = self.controller.searchGreedy(self.controller.getMap(), self.greedyDrone, self.x, self.y, self.finalPosition[0], self.finalPosition[1])
+        path2, executionTimeAStar = self.controller.searchAStar(self.controller.getMap(), self.AStarDrone, self.x, self.y, self.finalPosition[0], self.finalPosition[1])
         print("A* -> Execution time: {}".format(executionTimeAStar))
         print("Greedy -> Execution time: {}".format(executionTimeGreedy))
 
@@ -169,19 +153,19 @@ class UI:
                 if event.type == pygame.QUIT:
                     self.running = False
             
-            self.screen.blit(self.d.mapWithDrone(self.controller.getMap().image()),(0,0))
-            self.screen.blit(self.d2.mapWithDrone(self.controller.getMap().image()),(0,0))
-            if pygame.time.get_ticks() - lastTime >= 300:
+            self.screen.blit(self.greedyDrone.mapWithDrone(self.controller.getMap().image()),(0,0))
+            self.screen.blit(self.AStarDrone.mapWithDrone(self.controller.getMap().image()),(0,0))
+            if pygame.time.get_ticks() - lastTime >= ALGORITHM_RATE:
                 lastTime = pygame.time.get_ticks()
 
                 try:
-                    self.d.x, self.d.y = path.pop(0)
+                    self.greedyDrone.x, self.greedyDrone.y = path.pop(0)
                 except IndexError as ie:
                     print("Done.")
                     runningGreedy = False
 
                 try:
-                    self.d2.x, self.d2.y = path2.pop(0)
+                    self.AStarDrone.x, self.AStarDrone.y = path2.pop(0)
                 except IndexError as ie:
                     print("Done.")
                     runningAStar = False

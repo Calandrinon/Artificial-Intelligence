@@ -3,6 +3,7 @@ import time
 import heapq
 import math
 import pygame
+from random import random, randint
 
 class Controller:
     def __init__(self, repository):
@@ -124,3 +125,37 @@ class Controller:
             image.blit(mark, (move[1] *20, move[0] * 20))
             
         return image
+
+
+    def getGreedyDrone(self):
+        return self.repository.getGreedyDrone()
+
+
+    def getAStarDrone(self):
+        return self.repository.getAStarDrone()
+
+
+    def setAStarDronePosition(self, x, y):
+        drone = self.repository.getAStarDrone()
+        drone.setPosition(x, y)
+        self.repository.setAStarDrone(drone)
+
+
+    def setGreedyDronePosition(self, x, y):
+        drone = self.repository.getGreedyDrone()
+        drone.setPosition(x, y)
+        self.repository.setGreedyDrone(drone)
+
+
+    def generateStartAndFinishPosition(self):
+        x = randint(0, 19)
+        y = randint(0, 19)
+        while self.getMap().surface[x][y]:
+            (x, y) = (randint(0,19), randint(0,19))
+        initialPosition = (x, y)
+
+        finalPosition = (randint(0,19), randint(0,19))
+        while self.getMap().surface[finalPosition[0]][finalPosition[1]]:
+            finalPosition = (randint(0,19), randint(0,19))
+
+        return [initialPosition, finalPosition]

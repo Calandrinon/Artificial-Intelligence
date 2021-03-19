@@ -15,8 +15,11 @@ LEFT = 1
 RIGHT = 3
 
 #define indexes variations 
-v = [[-1, 0], [1, 0], [0, 1], [0, -1]]
+offsets = [[0, 1], [1, 0], [0, -1], [-1, 0]]
+
+GENE_VALUES = 4
+VISUALISED_CELL = -1
 
 #define mapsize 
 
-mapLengh = 20
+MAP_LENGTH = 20

@@ -39,6 +39,10 @@ class Individual:
         return self.__startingPosition
 
 
+    def getFitness(self):
+        return self.__f
+
+
     def __analyseSurface(self, row, column):
         if self.__exploredMap[row][column] != 1:
             if self.__exploredMap[row][column] != VISUALISED_CELL:
@@ -78,7 +82,7 @@ class Individual:
         # computes the fitness for the individual and saves it in self.__f
         self.__f = 0
         self.__exploredMap = copy.deepcopy(map)
-        surface = map.getSurface()
+        surface = self.__exploredMap.getSurface()
         currentPosition = self.__startingPosition
 
         for gene in self.__chromosome:
@@ -89,6 +93,10 @@ class Individual:
                 self.__f = 0
                 return
             self.__markVisualisedSurface()
+
+
+    def getNormalizedFitness(self, totalPopulationFitness):
+        return self.getFitness() / totalPopulationFitness
     
 
     def mutate(self, mutateProbability = 0.04):
@@ -111,21 +119,34 @@ class Individual:
     
 
 class Population():
-    def __init__(self, populationSize = 0, individualSize = 0):
+    def __init__(self, map, startX, startY, populationSize = 0, individualSize = 0):
         self.__populationSize = populationSize
-        self.__v = [domain.Individual(individualSize) for x in range(populationSize)]
+        self.__map = map
+        self.__individuals = [Individual(startX, startY, individualSize) for x in range(populationSize)]
+        self.__totalFitness = 0 
         
+
     def evaluate(self):
         # evaluates the population
-        for x in self.__v:
-            x.fitness()
+        for x in self.__individuals:
+            x.fitness(self.__map)
+            self.__totalFitness += x.getFitness()
             
             
     def selection(self, k = 0):
-        # perform a selection of k individuals from the population
-        # and returns that selection
-        pass
-    
+        # roulette-wheel selection of k individuals
+        randomChance = random()
+        selectedIndividuals = []
+
+        for individual in self.__individuals:
+            if len(selectedIndividuals) == k:
+                break
+
+            if individual.getNormalizedFitness() >= randomChance:
+                selectedIndividuals.append(individual)
+
+        return selectedIndividuals 
+
 
 class Map():
     def __init__(self, n = MAP_LENGTH, m = MAP_LENGTH):

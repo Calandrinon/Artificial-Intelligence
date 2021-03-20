@@ -25,10 +25,15 @@ class Individual:
         self.__startingPosition = np.array([x, y])
         self.__f = None
         self.__exploredMap = None
+        self.__age = 0
 
 
     def getChromosome(self):
         return self.__chromosome
+
+    
+    def incrementAge(self):
+        self.__age += 1
 
 
     def setChromosome(self, chromosome):
@@ -100,6 +105,7 @@ class Individual:
     
 
     def mutate(self, mutateProbability = 0.04):
+        # bit-flip mutation
         if random() < mutateProbability:
             mutatedGeneIndex = randint(0, self.__size - 1)
             newGeneValue = randint(0, GENE_VALUES-1)
@@ -124,6 +130,10 @@ class Population():
         self.__map = map
         self.__individuals = [Individual(startX, startY, individualSize) for x in range(populationSize)]
         self.__totalFitness = 0 
+
+    
+    def addIndividual(self, individual):
+        self.__individuals.append(individual)
         
 
     def evaluate(self):
@@ -131,6 +141,10 @@ class Population():
         for x in self.__individuals:
             x.fitness(self.__map)
             self.__totalFitness += x.getFitness()
+
+
+    def getFitnesses(self):
+        return [individual.getFitness() for individual in self.__individuals]
             
             
     def selection(self, k = 0):
@@ -164,6 +178,35 @@ class Map():
             for j in range(self.m):
                 if random() <= fill :
                     self.surface[i][j] = 1
+
+
+    def saveMap(self, numFile = "test.map"):
+        with open(numFile,'wb') as f:
+            pickle.dump(self, f)
+            f.close()
+        
+
+    def loadMap(self, numfile):
+        with open(numfile, "rb") as f:
+            dummy = pickle.load(f)
+            self.n = dummy.n
+            self.m = dummy.m
+            self.surface = dummy.surface
+            f.close()
+        
+
+    def image(self, colour = BLUE, background = WHITE):
+        mapImage = pygame.Surface((400,400))
+        brick = pygame.Surface((20,20))
+        brick.fill(BLUE)
+        mapImage.fill(WHITE)
+        for i in range(self.n):
+            for j in range(self.m):
+                if (self.surface[i][j] == 1):
+                    mapImage.blit(brick, ( j * 20, i * 20))
+                
+        return mapImage
+
                 
     def __str__(self):
         string=""

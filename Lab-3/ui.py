@@ -21,3 +21,13 @@ from domain import *
 #         d. view the drone moving on a path
 #              function gui.movingDrone(currentMap, path, speed, markseen)
 #              ATENTION! the function doesn't check if the path passes trough walls
+
+def main():
+    initPyGame((400, 400))
+
+
+
+    closePyGame()
+
+
+main()

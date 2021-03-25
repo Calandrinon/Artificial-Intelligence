@@ -177,9 +177,6 @@ class Population():
         fitnesses = []
 
         for individual in self.__individuals:
-            if not isinstance(individual, Individual):
-                print("NOT AN INDIVIDUAL: {}".format(individual))
-                continue
             fitnesses.append(individual.getFitness())
         
         return fitnesses

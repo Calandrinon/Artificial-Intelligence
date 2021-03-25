@@ -23,10 +23,10 @@ from domain import *
 #              ATENTION! the function doesn't check if the path passes trough walls
 
 def main():
-    numberOfGenerations = 30
-    selectedIndividualsFromAGeneration = 10
+    numberOfGenerations = 100
+    selectedIndividualsFromAGeneration = 50
     startingPosition = (9, 5)
-    populationSize = 20
+    populationSize = 10
     individualSize = 10 # 10 is the length of the longest path the drone can take
 
     repository = Repository()

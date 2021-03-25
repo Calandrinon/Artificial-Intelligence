@@ -19,7 +19,7 @@ class Controller():
 
         population = self.__repository.getTheMostRecentPopulation()
         population.evaluate() 
-        print("POPULATION={}".format(population.getAllIndividuals()))
+        #print("POPULATION={}".format(population.getAllIndividuals()))
         parents = population.selection(args[0])
         individualsWithChildren = []
 
@@ -31,6 +31,8 @@ class Controller():
 
             firstOffspring, secondOffspring = firstParent.crossover(secondParent)
             if firstOffspring == firstParent and secondOffspring == secondParent:
+                population.addIndividual(firstParent)
+                population.addIndividual(secondParent)
                 continue
             firstOffspring.mutate()
             secondOffspring.mutate()

@@ -9,10 +9,10 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
 #define directions
-UP = 0
-DOWN = 2
-LEFT = 1
-RIGHT = 3
+UP = 3
+DOWN = 1
+LEFT = 2
+RIGHT = 0
 
 #define indexes variations 
 offsets = [[0, 1], [1, 0], [0, -1], [-1, 0]]

@@ -25,7 +25,7 @@ from domain import *
 def main():
     numberOfGenerations = 30
     selectedIndividualsFromAGeneration = 10
-    startingPosition = (5, 5)
+    startingPosition = (9, 5)
     populationSize = 20
     individualSize = 10 # 10 is the length of the longest path the drone can take
 

@@ -96,13 +96,15 @@ class Individual:
         currentPosition = self.__startingPosition
 
         for gene in self.__chromosome:
-            currentPosition = self.__startingPosition
+            print("Current position: {}".format(currentPosition))
             offset = np.array(offsets[gene.getValue()])
             currentPosition = np.add(currentPosition, offset) 
             if surface[currentPosition[0]][currentPosition[1]] == 1:
                 self.__f = 0
                 return
             self.__markVisualisedSurface()
+
+        return self.__f
 
 
     def getNormalizedFitness(self, totalPopulationFitness):
@@ -162,6 +164,7 @@ class Population():
         # evaluates the population
         for x in self.__individuals:
             x.fitness(self.__map)
+            print("Fitness of individual {}: {}".format(x, x.getFitness()))
             self.__totalFitness += x.getFitness()
 
 

@@ -3,6 +3,8 @@
 from random import *
 from utils import *
 import numpy as np
+import pickle
+import copy
 
 
 # the glass Gene can be replaced with int or float, or other types
@@ -16,6 +18,9 @@ class Gene:
     def getValue(self):
         # gets the gene's value (can be 0, 1, 2 or 3, due to the fact that there are 4 directions the drone can opt for)
         return self.__value
+
+    def __repr__(self):
+        return str(self.__value)
 
 
 class Individual:
@@ -49,10 +54,10 @@ class Individual:
 
 
     def __analyseSurface(self, row, column):
-        if self.__exploredMap[row][column] != 1:
-            if self.__exploredMap[row][column] != VISUALISED_CELL:
+        if self.__exploredMap.getSurface()[row][column] != 1:
+            if self.__exploredMap.getSurface()[row][column] != VISUALISED_CELL:
                 self.__f += 1
-            self.__exploredMap[row][column] = VISUALISED_CELL
+            self.__exploredMap.getSurface()[row][column] = VISUALISED_CELL
             return True
         return False
 
@@ -83,7 +88,7 @@ class Individual:
                 break
 
                 
-    def fitness(self, map: Map):
+    def fitness(self, map):
         # computes the fitness for the individual and saves it in self.__f
         self.__f = 0
         self.__exploredMap = copy.deepcopy(map)
@@ -113,15 +118,24 @@ class Individual:
         
     
     def crossover(self, otherParent, crossoverProbability = 0.8):
-        offspring1, offspring2 = Individual(self.__size), Individual(self.__size) 
+        startingX, startingY = self.getStartingPosition()
+        offspring1, offspring2 = Individual(startingX, startingY, self.__size), Individual(startingX, startingY, self.__size) 
         if random() < crossoverProbability:
             # we perform the single-point crossover between the self and the other parent 
-            splitPoint = randint(1, self.__size - 2)
+            splitPoint = randint(2, self.__size - 3)
             otherChromosome = otherParent.getChromosome()
             offspring1.setChromosome(self.__chromosome[0:splitPoint] + otherChromosome[splitPoint:])
             offspring2.setChromosome(otherChromosome[0:splitPoint] + self.__chromosome[splitPoint:])
+            print("Split point: {}; First parent: {}, Second parent: {}, First offspring: {}, Second offspring: {};".format(splitPoint, self, otherParent, offspring1, offspring2))
+            return offspring1, offspring2
+        return self, otherParent
 
-        return offspring1, offspring2
+
+    def __repr__(self):
+        chromosomeAsString = ""
+        for gene in self.__chromosome:
+            chromosomeAsString += str(gene.getValue())
+        return chromosomeAsString
     
 
 class Population():
@@ -130,6 +144,14 @@ class Population():
         self.__map = map
         self.__individuals = [Individual(startX, startY, individualSize) for x in range(populationSize)]
         self.__totalFitness = 0 
+
+    
+    def getAllIndividuals(self):
+        return self.__individuals
+
+
+    def get(self, position):
+        return self.__individuals[position]
 
     
     def addIndividual(self, individual):
@@ -151,13 +173,18 @@ class Population():
         # roulette-wheel selection of k individuals
         randomChance = random()
         selectedIndividuals = []
+        cdf = 0
 
         for individual in self.__individuals:
             if len(selectedIndividuals) == k:
                 break
-
-            if individual.getNormalizedFitness() >= randomChance:
+            
+            cdf += individual.getNormalizedFitness(self.__totalFitness) 
+            if cdf >= randomChance:
                 selectedIndividuals.append(individual)
+
+        
+        print("SELECTED INDIVIDUALS: {}".format(selectedIndividuals))
 
         return selectedIndividuals 
 
@@ -171,6 +198,10 @@ class Map():
     
     def getSurface(self):
         return self.__surface
+
+
+    def setSurface(self, surface):
+        self.__surface = surface
 
     
     def randomMap(self, fill = 0.2):
@@ -191,7 +222,8 @@ class Map():
             dummy = pickle.load(f)
             self.n = dummy.n
             self.m = dummy.m
-            self.surface = dummy.surface
+            self.__surface = dummy.surface
+            print("SELF.SURFACE AS OPPOSED TO SELF.__SURFACE: {}".format(self.__surface))
             f.close()
         
 

@@ -23,11 +23,18 @@ from domain import *
 #              ATENTION! the function doesn't check if the path passes trough walls
 
 def main():
-    initPyGame((400, 400))
+    numberOfGenerations = 30
+    selectedIndividualsFromAGeneration = 10
+    startingPosition = (5, 5)
+    populationSize = 20
+    individualSize = 10 # 10 is the length of the longest path the drone can take
 
-
-
-    closePyGame()
+    repository = Repository()
+    repository.createPopulation([startingPosition[0], startingPosition[1], populationSize, individualSize])
+    controller = Controller(repository)
+    
+    finalStatistics = controller.solver([numberOfGenerations, selectedIndividualsFromAGeneration, startingPosition[0], startingPosition[1], populationSize, individualSize])
+    print("Average & standard deviation: {}".format(finalStatistics))
 
 
 main()

@@ -13,7 +13,14 @@ class Repository():
 
     def createPopulation(self, args): 
         # args = [startX, startY, populationSize, individualSize]
-        return Population(self.__cmap, args[0], args[1], args[2], args[3])
+        population = Population(self.__cmap, args[0], args[1], args[2], args[3])
+        self.__populations.append(population)
+
+        return population
+
+
+    def addNewPopulation(self, population):
+        self.__populations.append(population)
         
 
     def getMap(self):

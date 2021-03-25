@@ -19,16 +19,22 @@ class Controller():
 
         population = self.__repository.getTheMostRecentPopulation()
         population.evaluate() 
+        print("POPULATION={}".format(population.getAllIndividuals()))
+        print("THE SUPPOSED NUMBER OF SELECTED INDIVIDUALS: {}".format(args[0]))
         parents = population.selection(args[0])
         individualsWithChildren = []
 
-        while len(parents) % 2 == 0 and len(parents) > 0:
+        print("NUMBER OF SELECTED PARENTS: {}".format(len(parents)))
+
+        while len(parents) > 0:
             firstParent = parents.pop()
             firstParent.incrementAge()
             secondParent = parents.pop()
             secondParent.incrementAge()
 
             firstOffspring, secondOffspring = firstParent.crossover(secondParent)
+            if firstOffspring == firstParent and secondOffspring == secondParent:
+                continue
             firstOffspring.mutate()
             secondOffspring.mutate()
 
@@ -38,13 +44,15 @@ class Controller():
             individualsWithChildren.append(secondParent)
 
         quarter = round(len(individualsWithChildren) / 4, 2)
-        lastParentToSurvive = len(individualsWithChildren) - quarter
+        lastParentToSurvive = int(len(individualsWithChildren) - quarter)
         individualsWithChildren.sort(reverse=True, key=lambda individual: individual.getFitness())
 
         for parent in range(0, lastParentToSurvive):
             population.addIndividual(parent) 
 
         fitnesses = np.array(population.getFitnesses())
+        self.__repository.addNewPopulation(population)
+
         return (np.average(fitnesses), np.std(fitnesses))
 
         
@@ -58,6 +66,7 @@ class Controller():
         #    perform an iteration
         #    save the information needed for the statistics
         # return the results and the info for statistics
+        parentsToBeSelected = args[1]
 
         generationIndex = 0
         numberOfGenerations = args[0]
@@ -65,7 +74,7 @@ class Controller():
         allIterationAverages = []
 
         while generationIndex < numberOfGenerations:
-            average, standardDeviation = self.iteration()
+            average, standardDeviation = self.iteration([parentsToBeSelected])
             allIterationAverages.append(average)
             print("Generation {}: Average={}, Standard deviation={};".format(generationIndex, average, standardDeviation))
             generationIndex += 1
@@ -81,7 +90,6 @@ class Controller():
         # create the population,
         # run the algorithm
         # return the results and the statistics
-        self.__repository.createPopulation(args[2:])
-        average, standardDeviation = self.run(args[0], args[1])
+        average, standardDeviation = self.run(args[:2])
 
         return (average, standardDeviation)

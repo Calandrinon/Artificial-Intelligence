@@ -109,8 +109,6 @@ class Individual:
                 return
             self.__markVisualisedSurface()
 
-        print("Individual's chromosome: {}".format(self.__chromosome))
-        print("Marked map:\n{}".format(self.__exploredMap))
         return self.__f
 
 
@@ -137,7 +135,6 @@ class Individual:
             otherChromosome = otherParent.getChromosome()
             offspring1.setChromosome(self.__chromosome[0:splitPoint] + otherChromosome[splitPoint:])
             offspring2.setChromosome(otherChromosome[0:splitPoint] + self.__chromosome[splitPoint:])
-            #print("Split point: {}; First parent: {}, Second parent: {}, First offspring: {}, Second offspring: {};".format(splitPoint, self, otherParent, offspring1, offspring2))
             return offspring1, offspring2
         return self, otherParent
 
@@ -152,7 +149,7 @@ class Individual:
 class Population():
     def __init__(self, map, startX, startY, populationSize = 0, individualSize = 0):
         self.__populationSize = populationSize
-        self.__map = map
+        self.__map = copy.deepcopy(map)
         self.__individuals = [Individual(startX, startY, individualSize) for x in range(populationSize)]
         self.__totalFitness = 0 
 
@@ -171,35 +168,31 @@ class Population():
 
     def evaluate(self):
         # evaluates the population
+        self.__totalFitness = 0
         for x in self.__individuals:
             x.fitness(self.__map)
             self.__totalFitness += x.getFitness()
+        print("Total fitness: {}".format(self.__totalFitness))
+        print("Individuals: {}".format(self.__individuals))
 
 
     def getFitnesses(self):
-        fitnesses = []
-
-        for individual in self.__individuals:
-            fitnesses.append(individual.getFitness())
-        
-        return fitnesses
+        return [individual.getFitness() for individual in self.__individuals]
             
             
     def selection(self, k = 0):
-        # roulette-wheel selection of k individuals
+        # roulette-wheel selection 
         randomChance = random()
         selectedIndividuals = []
         cdf = 0
+        self.__individuals.sort(key=lambda x: x.getFitness())
 
         for individual in self.__individuals:
-            if len(selectedIndividuals) == k:
-                break
-            
             cdf += individual.getNormalizedFitness(self.__totalFitness) 
             if cdf >= randomChance:
                 selectedIndividuals.append(individual)
+        print("CDF: {}".format(cdf))
 
-        
         return selectedIndividuals 
 
     

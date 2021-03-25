@@ -75,7 +75,7 @@ class Controller():
         while generationIndex < numberOfGenerations:
             average, standardDeviation = self.iteration([parentsToBeSelected])
             allIterationAverages.append(average)
-            #print("Generation {}: Average={}, Standard deviation={};".format(generationIndex, average, standardDeviation))
+            print("Generation {}: Average={}, Standard deviation={};".format(generationIndex, average, standardDeviation))
             generationIndex += 1
 
         allIterationAverages = np.array(allIterationAverages)

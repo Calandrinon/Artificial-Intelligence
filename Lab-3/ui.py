@@ -23,11 +23,11 @@ from domain import *
 #              ATENTION! the function doesn't check if the path passes trough walls
 
 def main():
-    numberOfGenerations = 100
+    numberOfGenerations = 200
     selectedIndividualsFromAGeneration = 50
     startingPosition = (9, 5)
     populationSize = 10
-    individualSize = 10 # 10 is the length of the longest path the drone can take
+    individualSize = 20 # 20 is the length of the longest path the drone can take
 
     repository = Repository()
     repository.createPopulation([startingPosition[0], startingPosition[1], populationSize, individualSize])

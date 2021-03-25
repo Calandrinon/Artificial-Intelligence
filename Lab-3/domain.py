@@ -31,6 +31,7 @@ class Individual:
         self.__size = size
         self.__chromosome = [Gene() for i in range(self.__size)]
         self.__startingPosition = np.array([x, y])
+        self.__currentPosition = self.__startingPosition
         self.__f = 0
         self.__exploredMap = None
         self.__age = 0
@@ -68,27 +69,27 @@ class Individual:
 
 
     def __markVisualisedSurface(self):
-        row = self.__startingPosition[0]
+        row = self.__currentPosition[0]
         # mark the cells to the right
-        for column in range(self.__startingPosition[1], MAP_LENGTH): 
+        for column in range(self.__currentPosition[1], MAP_LENGTH): 
             if not self.__analyseSurface(row, column):
                 break
 
         # mark the cells to the left
-        row = self.__startingPosition[0]
-        for column in range(self.__startingPosition[1]-1, -1, -1):
+        row = self.__currentPosition[0]
+        for column in range(self.__currentPosition[1]-1, -1, -1):
             if not self.__analyseSurface(row, column):
                 break
 
         # mark the cells upwards
-        column = self.__startingPosition[1]
-        for row in range(self.__startingPosition[0], -1, -1):
+        column = self.__currentPosition[1]
+        for row in range(self.__currentPosition[0], -1, -1):
             if not self.__analyseSurface(row, column):
                 break
 
         # mark the cells downwards
-        column = self.__startingPosition[1]
-        for row in range(self.__startingPosition[0]+1, MAP_LENGTH):
+        column = self.__currentPosition[1]
+        for row in range(self.__currentPosition[0]+1, MAP_LENGTH):
             if not self.__analyseSurface(row, column):
                 break
 
@@ -98,16 +99,18 @@ class Individual:
         self.__f = 0
         self.__exploredMap = copy.deepcopy(map)
         surface = self.__exploredMap.getSurface()
-        currentPosition = self.__startingPosition
+        self.__currentPosition = self.__startingPosition
 
         for gene in self.__chromosome:
             offset = np.array(offsets[gene.getValue()])
-            currentPosition = np.add(currentPosition, offset) 
-            if surface[currentPosition[0]][currentPosition[1]] == 1:
+            self.__currentPosition = np.add(self.__currentPosition, offset) 
+            if surface[self.__currentPosition[0]][self.__currentPosition[1]] == 1:
                 self.__f = 0
                 return
             self.__markVisualisedSurface()
 
+        print("Individual's chromosome: {}".format(self.__chromosome))
+        print("Marked map:\n{}".format(self.__exploredMap))
         return self.__f
 
 

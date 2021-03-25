@@ -3,6 +3,8 @@
 from random import *
 from utils import *
 import numpy as np
+import pickle
+import copy
 
 
 # the glass Gene can be replaced with int or float, or other types
@@ -17,13 +19,20 @@ class Gene:
         # gets the gene's value (can be 0, 1, 2 or 3, due to the fact that there are 4 directions the drone can opt for)
         return self.__value
 
+    def setValue(self, newValue):
+        self.__value = newValue
+
+    def __repr__(self):
+        return str(self.__value)
+
 
 class Individual:
     def __init__(self, x, y, size = 0):
         self.__size = size
         self.__chromosome = [Gene() for i in range(self.__size)]
         self.__startingPosition = np.array([x, y])
-        self.__f = None
+        self.__currentPosition = self.__startingPosition
+        self.__f = 0
         self.__exploredMap = None
         self.__age = 0
 
@@ -49,55 +58,57 @@ class Individual:
 
 
     def __analyseSurface(self, row, column):
-        if self.__exploredMap[row][column] != 1:
-            if self.__exploredMap[row][column] != VISUALISED_CELL:
+        if self.__exploredMap.getSurface()[row][column] != 1:
+            if self.__exploredMap.getSurface()[row][column] != VISUALISED_CELL:
                 self.__f += 1
-            self.__exploredMap[row][column] = VISUALISED_CELL
+            surface = self.__exploredMap.getSurface()
+            surface[row][column] = VISUALISED_CELL
+            self.__exploredMap.setSurface(surface)
             return True
         return False
 
 
     def __markVisualisedSurface(self):
-        row = self.__startingPosition[0]
+        row = self.__currentPosition[0]
         # mark the cells to the right
-        for column in range(self.__startingPosition[1]+1, MAP_LENGTH): 
+        for column in range(self.__currentPosition[1], MAP_LENGTH): 
             if not self.__analyseSurface(row, column):
                 break
 
         # mark the cells to the left
-        row = self.__startingPosition[0]
-        for column in range(self.__startingPosition[1]-1, -1, -1):
+        row = self.__currentPosition[0]
+        for column in range(self.__currentPosition[1]-1, -1, -1):
             if not self.__analyseSurface(row, column):
                 break
 
         # mark the cells upwards
-        column = self.__startingPosition[1]
-        for row in range(self.__startingPosition[0]-1, -1, -1):
+        column = self.__currentPosition[1]
+        for row in range(self.__currentPosition[0], -1, -1):
             if not self.__analyseSurface(row, column):
                 break
 
         # mark the cells downwards
-        column = self.__startingPosition[1]
-        for row in range(self.__startingPosition[0]+1, MAP_LENGTH):
+        column = self.__currentPosition[1]
+        for row in range(self.__currentPosition[0]+1, MAP_LENGTH):
             if not self.__analyseSurface(row, column):
                 break
 
                 
-    def fitness(self, map: Map):
+    def fitness(self, map):
         # computes the fitness for the individual and saves it in self.__f
         self.__f = 0
         self.__exploredMap = copy.deepcopy(map)
         surface = self.__exploredMap.getSurface()
-        currentPosition = self.__startingPosition
+        self.__currentPosition = self.__startingPosition
 
         for gene in self.__chromosome:
-            currentPosition = self.__startingPosition
             offset = np.array(offsets[gene.getValue()])
-            currentPosition = np.add(currentPosition, offset) 
-            if surface[currentPosition[0]][currentPosition[1]] == 1:
-                self.__f = 0
-                return
+            self.__currentPosition = np.add(self.__currentPosition, offset) 
+            if surface[self.__currentPosition[0]][self.__currentPosition[1]] == 1:
+                return self.__f
             self.__markVisualisedSurface()
+
+        return self.__f
 
 
     def getNormalizedFitness(self, totalPopulationFitness):
@@ -106,30 +117,48 @@ class Individual:
 
     def mutate(self, mutateProbability = 0.04):
         # bit-flip mutation
+        
         if random() < mutateProbability:
             mutatedGeneIndex = randint(0, self.__size - 1)
             newGeneValue = randint(0, GENE_VALUES-1)
-            self.__chromosome[mutatedGeneIndex] = newGeneValue
+            self.__chromosome[mutatedGeneIndex] = Gene()
+            self.__chromosome[mutatedGeneIndex].setValue(newGeneValue)
         
     
     def crossover(self, otherParent, crossoverProbability = 0.8):
-        offspring1, offspring2 = Individual(self.__size), Individual(self.__size) 
+        startingX, startingY = self.getStartingPosition()
+        offspring1, offspring2 = Individual(startingX, startingY, self.__size), Individual(startingX, startingY, self.__size) 
         if random() < crossoverProbability:
             # we perform the single-point crossover between the self and the other parent 
-            splitPoint = randint(1, self.__size - 2)
+            splitPoint = randint(2, self.__size - 3)
             otherChromosome = otherParent.getChromosome()
             offspring1.setChromosome(self.__chromosome[0:splitPoint] + otherChromosome[splitPoint:])
             offspring2.setChromosome(otherChromosome[0:splitPoint] + self.__chromosome[splitPoint:])
+            return offspring1, offspring2
+        return self, otherParent
 
-        return offspring1, offspring2
+
+    def __repr__(self):
+        chromosomeAsString = ""
+        for gene in self.__chromosome:
+            chromosomeAsString += str(gene.getValue())
+        return chromosomeAsString
     
 
 class Population():
     def __init__(self, map, startX, startY, populationSize = 0, individualSize = 0):
         self.__populationSize = populationSize
-        self.__map = map
+        self.__map = copy.deepcopy(map)
         self.__individuals = [Individual(startX, startY, individualSize) for x in range(populationSize)]
         self.__totalFitness = 0 
+
+    
+    def getAllIndividuals(self):
+        return self.__individuals
+
+
+    def get(self, position):
+        return self.__individuals[position]
 
     
     def addIndividual(self, individual):
@@ -138,9 +167,13 @@ class Population():
 
     def evaluate(self):
         # evaluates the population
+        self.__totalFitness = 0
         for x in self.__individuals:
             x.fitness(self.__map)
             self.__totalFitness += x.getFitness()
+        
+        print("Total fitness: {}".format(self.__totalFitness))
+        print("Individuals: {}".format(self.__individuals))
 
 
     def getFitnesses(self):
@@ -148,18 +181,23 @@ class Population():
             
             
     def selection(self, k = 0):
-        # roulette-wheel selection of k individuals
+        # roulette-wheel selection 
         randomChance = random()
         selectedIndividuals = []
+        cdf = 0
+        self.__individuals.sort(key=lambda x: x.getFitness())
 
         for individual in self.__individuals:
-            if len(selectedIndividuals) == k:
-                break
-
-            if individual.getNormalizedFitness() >= randomChance:
+            cdf += individual.getNormalizedFitness(self.__totalFitness) 
+            if cdf >= randomChance:
                 selectedIndividuals.append(individual)
+        print("CDF: {}".format(cdf))
 
         return selectedIndividuals 
+
+    
+    def __repr(self):
+        return str(self.__individuals)
 
 
 class Map():
@@ -171,6 +209,10 @@ class Map():
     
     def getSurface(self):
         return self.__surface
+
+
+    def setSurface(self, surface):
+        self.__surface = surface
 
     
     def randomMap(self, fill = 0.2):
@@ -191,7 +233,7 @@ class Map():
             dummy = pickle.load(f)
             self.n = dummy.n
             self.m = dummy.m
-            self.surface = dummy.surface
+            self.__surface = dummy.surface
             f.close()
         
 
@@ -212,6 +254,6 @@ class Map():
         string=""
         for i in range(self.n):
             for j in range(self.m):
-                string = string + str(int(self.surface[i][j]))
+                string = string + str(int(self.__surface[i][j]))
             string = string + "\n"
         return string

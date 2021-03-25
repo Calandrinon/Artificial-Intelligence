@@ -19,6 +19,9 @@ class Gene:
         # gets the gene's value (can be 0, 1, 2 or 3, due to the fact that there are 4 directions the drone can opt for)
         return self.__value
 
+    def setValue(self, newValue):
+        self.__value = newValue
+
     def __repr__(self):
         return str(self.__value)
 
@@ -28,7 +31,7 @@ class Individual:
         self.__size = size
         self.__chromosome = [Gene() for i in range(self.__size)]
         self.__startingPosition = np.array([x, y])
-        self.__f = None
+        self.__f = 0
         self.__exploredMap = None
         self.__age = 0
 
@@ -57,7 +60,9 @@ class Individual:
         if self.__exploredMap.getSurface()[row][column] != 1:
             if self.__exploredMap.getSurface()[row][column] != VISUALISED_CELL:
                 self.__f += 1
-            self.__exploredMap.getSurface()[row][column] = VISUALISED_CELL
+            surface = self.__exploredMap.getSurface()
+            surface[row][column] = VISUALISED_CELL
+            self.__exploredMap.setSurface(surface)
             return True
         return False
 
@@ -65,7 +70,7 @@ class Individual:
     def __markVisualisedSurface(self):
         row = self.__startingPosition[0]
         # mark the cells to the right
-        for column in range(self.__startingPosition[1]+1, MAP_LENGTH): 
+        for column in range(self.__startingPosition[1], MAP_LENGTH): 
             if not self.__analyseSurface(row, column):
                 break
 
@@ -77,7 +82,7 @@ class Individual:
 
         # mark the cells upwards
         column = self.__startingPosition[1]
-        for row in range(self.__startingPosition[0]-1, -1, -1):
+        for row in range(self.__startingPosition[0], -1, -1):
             if not self.__analyseSurface(row, column):
                 break
 
@@ -96,7 +101,6 @@ class Individual:
         currentPosition = self.__startingPosition
 
         for gene in self.__chromosome:
-            print("Current position: {}".format(currentPosition))
             offset = np.array(offsets[gene.getValue()])
             currentPosition = np.add(currentPosition, offset) 
             if surface[currentPosition[0]][currentPosition[1]] == 1:
@@ -113,10 +117,12 @@ class Individual:
 
     def mutate(self, mutateProbability = 0.04):
         # bit-flip mutation
+        
         if random() < mutateProbability:
             mutatedGeneIndex = randint(0, self.__size - 1)
             newGeneValue = randint(0, GENE_VALUES-1)
-            self.__chromosome[mutatedGeneIndex] = newGeneValue
+            self.__chromosome[mutatedGeneIndex] = Gene()
+            self.__chromosome[mutatedGeneIndex].setValue(newGeneValue)
         
     
     def crossover(self, otherParent, crossoverProbability = 0.8):
@@ -128,7 +134,7 @@ class Individual:
             otherChromosome = otherParent.getChromosome()
             offspring1.setChromosome(self.__chromosome[0:splitPoint] + otherChromosome[splitPoint:])
             offspring2.setChromosome(otherChromosome[0:splitPoint] + self.__chromosome[splitPoint:])
-            print("Split point: {}; First parent: {}, Second parent: {}, First offspring: {}, Second offspring: {};".format(splitPoint, self, otherParent, offspring1, offspring2))
+            #print("Split point: {}; First parent: {}, Second parent: {}, First offspring: {}, Second offspring: {};".format(splitPoint, self, otherParent, offspring1, offspring2))
             return offspring1, offspring2
         return self, otherParent
 
@@ -164,12 +170,19 @@ class Population():
         # evaluates the population
         for x in self.__individuals:
             x.fitness(self.__map)
-            print("Fitness of individual {}: {}".format(x, x.getFitness()))
             self.__totalFitness += x.getFitness()
 
 
     def getFitnesses(self):
-        return [individual.getFitness() for individual in self.__individuals]
+        fitnesses = []
+
+        for individual in self.__individuals:
+            if not isinstance(individual, Individual):
+                print("NOT AN INDIVIDUAL: {}".format(individual))
+                continue
+            fitnesses.append(individual.getFitness())
+        
+        return fitnesses
             
             
     def selection(self, k = 0):
@@ -187,9 +200,11 @@ class Population():
                 selectedIndividuals.append(individual)
 
         
-        print("SELECTED INDIVIDUALS: {}".format(selectedIndividuals))
-
         return selectedIndividuals 
+
+    
+    def __repr(self):
+        return str(self.__individuals)
 
 
 class Map():
@@ -226,7 +241,6 @@ class Map():
             self.n = dummy.n
             self.m = dummy.m
             self.__surface = dummy.surface
-            print("SELF.SURFACE AS OPPOSED TO SELF.__SURFACE: {}".format(self.__surface))
             f.close()
         
 
@@ -247,6 +261,6 @@ class Map():
         string=""
         for i in range(self.n):
             for j in range(self.m):
-                string = string + str(int(self.surface[i][j]))
+                string = string + str(int(self.__surface[i][j]))
             string = string + "\n"
         return string

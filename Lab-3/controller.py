@@ -20,13 +20,10 @@ class Controller():
         population = self.__repository.getTheMostRecentPopulation()
         population.evaluate() 
         print("POPULATION={}".format(population.getAllIndividuals()))
-        print("THE SUPPOSED NUMBER OF SELECTED INDIVIDUALS: {}".format(args[0]))
         parents = population.selection(args[0])
         individualsWithChildren = []
 
-        print("NUMBER OF SELECTED PARENTS: {}".format(len(parents)))
-
-        while len(parents) > 0:
+        while len(parents) >= 2:
             firstParent = parents.pop()
             firstParent.incrementAge()
             secondParent = parents.pop()
@@ -47,8 +44,8 @@ class Controller():
         lastParentToSurvive = int(len(individualsWithChildren) - quarter)
         individualsWithChildren.sort(reverse=True, key=lambda individual: individual.getFitness())
 
-        for parent in range(0, lastParentToSurvive):
-            population.addIndividual(parent) 
+        for parentIndex in range(0, lastParentToSurvive):
+            population.addIndividual(individualsWithChildren[parentIndex])
 
         fitnesses = np.array(population.getFitnesses())
         self.__repository.addNewPopulation(population)

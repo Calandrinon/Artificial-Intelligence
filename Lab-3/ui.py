@@ -1,13 +1,5 @@
-# -*- coding: utf-8 -*-
-
-
+# -*- coding: utf-8 -*-jj
 # imports
-from gui import *
-from controller import *
-from repository import *
-from domain import *
-
-
 # create a menu
 #   1. map options:
 #         a. create random map
@@ -22,19 +14,62 @@ from domain import *
 #              function gui.movingDrone(currentMap, path, speed, markseen)
 #              ATENTION! the function doesn't check if the path passes trough walls
 
-def main():
-    numberOfGenerations = 20
-    selectedIndividualsFromAGeneration = 10
-    startingPosition = (4, 7)
-    populationSize = 20
-    individualSize = 10 # 10 is the length of the longest path the drone can take
-
-    repository = Repository()
-    repository.createPopulation([startingPosition[0], startingPosition[1], populationSize, individualSize])
-    controller = Controller(repository)
-    
-    finalStatistics = controller.solver([numberOfGenerations, selectedIndividualsFromAGeneration, startingPosition[0], startingPosition[1], populationSize, individualSize])
-    print("Average & standard deviation: {}".format(finalStatistics))
+import matplotlib.pyplot as plt
+import numpy as np
+import math
 
 
-main()
+class UI:
+    def __init__(self, controller):
+        self.__controller = controller 
+        self.figure, self.axes = plt.subplots()
+        self.x_axis = []
+        self.y_axis = []
+
+
+    def refreshPlot(self, generation, averageFitness):
+        self.x_axis.append(generation)
+        self.y_axis.append(averageFitness)
+        self.axes.plot(self.x_axis, self.y_axis)
+        plt.pause(0.05)
+
+
+    def run(self, args):
+        # args - list of parameters needed in order to run the algorithm
+        # args = [numberOfGenerations, selectedIndividualsFromAGeneration]
+        if len(args) != 2:
+            raise Exception("The number of parameters is incorrect.")
+        
+        # until stop condition
+        #    perform an iteration
+        #    save the information needed for the statistics
+        # return the results and the info for statistics
+        parentsToBeSelected = args[1]
+
+        generationIndex = 0
+        numberOfGenerations = args[0]
+        selectedIndividualsFromAGeneration = args[1]
+        allIterationAverages = []
+
+        while generationIndex < numberOfGenerations:
+            average, standardDeviation = self.__controller.iteration([parentsToBeSelected])
+            allIterationAverages.append(average)
+            print("Generation {}: Average={}, Standard deviation={};".format(generationIndex, average, standardDeviation))
+            self.refreshPlot(generationIndex, average)
+            generationIndex += 1
+
+        allIterationAverages = np.array(allIterationAverages)
+        plt.show()
+        return (np.average(allIterationAverages), np.std(allIterationAverages))
+
+
+    def solver(self, args):
+        # args - list of parameters needed in order to run the solver
+        # args = [numberOfGenerations, selectedIndividualsFromAGeneration, startingPositionX, startingPositionY, populationSize, individualSize]
+        
+        # create the population,
+        # run the algorithm
+        # return the results and the statistics
+        average, standardDeviation = self.run(args[:2])
+
+        return (average, standardDeviation)

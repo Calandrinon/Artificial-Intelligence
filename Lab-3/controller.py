@@ -44,3 +44,11 @@ class Controller():
 
         return (np.average(fitnesses), np.std(fitnesses))
 
+    
+    def getTheFittestIndividual(self):
+        population = self.__repository.getTheMostRecentPopulation()
+        return population.getTheFittestIndividual()
+
+
+    def getMap(self):
+        return self.__repository.getMap()

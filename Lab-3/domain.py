@@ -35,6 +35,7 @@ class Individual:
         self.__f = 0
         self.__exploredMap = None
         self.__age = 0
+        self.__path = []
 
 
     def getChromosome(self):
@@ -55,6 +56,14 @@ class Individual:
 
     def getFitness(self):
         return self.__f
+
+
+    def getPath(self):
+        return self.__path
+
+    
+    def getExploredMap(self):
+        return self.__exploredMap
 
 
     def __analyseSurface(self, row, column):
@@ -93,6 +102,10 @@ class Individual:
             if not self.__analyseSurface(row, column):
                 break
 
+
+    def __validPosition(self, row, column):
+        return row >= 0 and row < MAP_LENGTH and column >= 0 and column < MAP_LENGTH
+
                 
     def fitness(self, map):
         # computes the fitness for the individual and saves it in self.__f
@@ -100,13 +113,22 @@ class Individual:
         self.__exploredMap = copy.deepcopy(map)
         surface = self.__exploredMap.getSurface()
         self.__currentPosition = self.__startingPosition
+        self.__path = []
+        self.__path.append(self.__currentPosition)
 
         for gene in self.__chromosome:
             offset = np.array(offsets[gene.getValue()])
             self.__currentPosition = np.add(self.__currentPosition, offset) 
+
+            if not self.__validPosition(self.__currentPosition[0], self.__currentPosition[1]): # in case the chromosome leads the drone to go out of the matrix boundaries
+                self.__f = 1
+                return self.__f
+
             if surface[self.__currentPosition[0]][self.__currentPosition[1]] == 1:
                 return self.__f
+
             self.__markVisualisedSurface()
+            self.__path.append(self.__currentPosition)
 
         return self.__f
 
@@ -143,6 +165,10 @@ class Individual:
         for gene in self.__chromosome:
             chromosomeAsString += str(gene.getValue())
         return chromosomeAsString
+
+
+    def __gt__(self, other):
+        return self.__f > other.__f
     
 
 class Population():
@@ -163,6 +189,10 @@ class Population():
     
     def addIndividual(self, individual):
         self.__individuals.append(individual)
+
+
+    def getTheFittestIndividual(self):
+        return max(self.__individuals)
         
 
     def evaluate(self):
@@ -171,9 +201,6 @@ class Population():
         for x in self.__individuals:
             x.fitness(self.__map)
             self.__totalFitness += x.getFitness()
-        
-        print("Total fitness: {}".format(self.__totalFitness))
-        print("Individuals: {}".format(self.__individuals))
 
 
     def getFitnesses(self):
@@ -191,7 +218,6 @@ class Population():
             cdf += individual.getNormalizedFitness(self.__totalFitness) 
             if cdf >= randomChance:
                 selectedIndividuals.append(individual)
-        print("CDF: {}".format(cdf))
 
         return selectedIndividuals 
 
@@ -214,7 +240,7 @@ class Map():
     def setSurface(self, surface):
         self.__surface = surface
 
-    
+
     def randomMap(self, fill = 0.2):
         for i in range(self.n):
             for j in range(self.m):

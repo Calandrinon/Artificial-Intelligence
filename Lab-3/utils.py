@@ -19,6 +19,7 @@ offsets = [[0, 1], [1, 0], [0, -1], [-1, 0]]
 
 GENE_VALUES = 4
 VISUALISED_CELL = 9
+OCCUPIED_CELL = 1
 
 #define mapsize 
 

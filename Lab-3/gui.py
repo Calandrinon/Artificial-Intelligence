@@ -168,7 +168,7 @@ class GUI:
         numberOfGenerations = args[0]
         selectedIndividualsFromAGeneration = args[1]
         allIterationAverages = []
-
+        totalAverages = 0
         while generationIndex < numberOfGenerations:
             average, standardDeviation = self.__controller.iteration([parentsToBeSelected])
             allIterationAverages.append(average)

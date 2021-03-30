@@ -1,4 +1,5 @@
 from gui import *
+from random import randint
 
 class UI:
     def __init__(self, controller):
@@ -12,6 +13,11 @@ class UI:
     def __getGenerations(self):
         generations = int(input("Enter the number of generations:"))
         return generations
+
+
+    def __getPopulations(self):
+        populations = int(input("Enter the number of populations:"))
+        return populations
 
 
     def __getStartingPosition(self):
@@ -72,13 +78,20 @@ class UI:
 
     def __startSolver(self):
         numberOfGenerations = self.__getGenerations() 
+        numberOfPopulations = self.__getPopulations()
         selectedIndividualsFromAGeneration = 10
         startingPosition = self.__getStartingPosition() 
         populationSize = self.__getPopulationSize()
         individualSize = self.__getIndividualSize()
 
-        self.__controller.createPopulation(startingPosition[0], startingPosition[1], populationSize, individualSize)
-        finalStatistics = self.__gui.solver([numberOfGenerations, selectedIndividualsFromAGeneration, startingPosition[0], startingPosition[1], populationSize, individualSize])
+        randomSeeds = [randint(0, 100000) for i in range(0, numberOfPopulations)]
+        for populationIndex in range(0, numberOfPopulations):
+            print("Seed for population {}: {}".format(populationIndex, randomSeeds[populationIndex]))
+            self.__controller.createPopulation(startingPosition[0], startingPosition[1], populationSize, individualSize)
+
+        self.__controller.mergeAllPopulations()
+
+        finalStatistics = self.__gui.solver([numberOfGenerations, numberOfPopulations, selectedIndividualsFromAGeneration, startingPosition[0], startingPosition[1], populationSize, individualSize])
 
         print("Average & standard deviation of all generations: {}".format(finalStatistics))
 

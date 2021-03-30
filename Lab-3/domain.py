@@ -170,12 +170,18 @@ class Population():
     def __init__(self, map, startX, startY, populationSize = 0, individualSize = 0):
         self.__populationSize = populationSize
         self.__map = copy.deepcopy(map)
+        self.__individualSize = individualSize
+        self.__startX, self.__startY = startX, startY
         self.__individuals = [Individual(startX, startY, individualSize) for x in range(populationSize)]
         self.__totalFitness = 0 
 
     
     def getAllIndividuals(self):
         return self.__individuals
+
+    
+    def __setIndividuals(self, individuals):
+        self.__individuals = individuals
 
 
     def get(self, position):
@@ -215,6 +221,17 @@ class Population():
                 selectedIndividuals.append(individual)
 
         return selectedIndividuals 
+
+
+    def merge(self, other):
+        sizeOfTheFirstPopulation = len(self.__individuals)
+        sizeOfTheSecondPopulation = len(other.getAllIndividuals())
+        newPopulation = Population(self.__map, self.__startX, self.__startY, sizeOfTheFirstPopulation+sizeOfTheSecondPopulation, self.__individualSize) 
+
+        firstPopulationIndividuals = self.__individuals
+        secondPopulationIndividuals = other.getAllIndividuals()
+        newPopulation.__setIndividuals(firstPopulationIndividuals + secondPopulationIndividuals)
+        return newPopulation
 
     
     def __repr(self):

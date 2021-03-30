@@ -2,6 +2,7 @@
 
 import pickle
 from domain import *
+import random
 
 
 class Repository():
@@ -45,6 +46,10 @@ class Repository():
             raise Exception("There are no populations in the repository.")
         return self.__populations[-1]
 
-    # TO DO : add the other components for the repository: 
-    #    load and save from file, etc
-            
+
+    def mergePopulations(self):
+        population = self.__populations[0]
+        for i in range(1, len(self.__populations)):
+            population = population.merge(self.__populations[i])
+
+        self.__populations = [population]

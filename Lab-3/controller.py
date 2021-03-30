@@ -68,3 +68,6 @@ class Controller():
 
     def saveMap(self, fileName):
         self.__repository.saveMap(fileName)
+
+    def mergeAllPopulations(self):
+        self.__repository.mergePopulations()

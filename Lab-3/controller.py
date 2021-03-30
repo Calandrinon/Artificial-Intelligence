@@ -52,3 +52,19 @@ class Controller():
 
     def getMap(self):
         return self.__repository.getMap()
+
+    
+    def createPopulation(self, startX, startY, populationSize, individualSize):
+        self.__repository.createPopulation([startX, startY, populationSize, individualSize])
+
+
+    def createRandomMap(self):
+        self.__repository.createRandomMap()
+
+
+    def loadMap(self, fileName):
+        self.__repository.loadMap(fileName)
+
+
+    def saveMap(self, fileName):
+        self.__repository.saveMap(fileName)

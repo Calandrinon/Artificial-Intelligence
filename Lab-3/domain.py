@@ -1,14 +1,9 @@
-# -*- coding: utf-8 -*-
-
 from random import *
 from utils import *
 import numpy as np
 import pickle
 import copy
 
-
-# the glass Gene can be replaced with int or float, or other types
-# depending on your problem's representation
 
 class Gene:
     def __init__(self):
@@ -230,15 +225,15 @@ class Map():
     def __init__(self, n = MAP_LENGTH, m = MAP_LENGTH):
         self.n = n
         self.m = m
-        self.__surface = np.zeros((self.n, self.m))
+        self.surface = np.zeros((self.n, self.m))
 
     
     def getSurface(self):
-        return self.__surface
+        return self.surface
 
 
     def setSurface(self, surface):
-        self.__surface = surface
+        self.surface = surface
 
 
     def randomMap(self, fill = 0.2):
@@ -259,7 +254,7 @@ class Map():
             dummy = pickle.load(f)
             self.n = dummy.n
             self.m = dummy.m
-            self.__surface = dummy.surface
+            self.surface = dummy.surface
             f.close()
         
 
@@ -280,6 +275,6 @@ class Map():
         string=""
         for i in range(self.n):
             for j in range(self.m):
-                string = string + str(int(self.__surface[i][j]))
+                string = string + str(int(self.surface[i][j]))
             string = string + "\n"
         return string

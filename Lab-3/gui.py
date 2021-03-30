@@ -43,23 +43,29 @@ class GUI:
         # create a surface on screen that has the size of 800 x 480
         screen = pygame.display.set_mode(dimension)
         screen.fill(WHITE)
+        screen.blit
         return screen
 
 
     def closePyGame(self):
-        # closes the pygame
-        """
-        running = True
-        # loop for events
-        while running:
-            # event handling, gets all event from the event queue
-            for event in pygame.event.get():
-                # only do something if the event is of type QUIT
-                if event.type == pygame.QUIT:
-                    # change the value to False, to exit the main loop
-                    running = False
-        """
         pygame.quit()
+
+
+    def closePygameOnEvent(self):
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.closePyGame()
+                    running = False
+
+
+    def visualizeMap(self):
+        map = self.__controller.getMap()
+        screen = self.initPyGame((400,400))
+        screen.blit(self.image(map), (0,0))
+        pygame.display.flip()
+        self.closePygameOnEvent()
 
 
     def validPosition(self, row, column):

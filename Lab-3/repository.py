@@ -7,9 +7,7 @@ from domain import *
 class Repository():
     def __init__(self):
         self.__populations = []
-        self.__cmap = Map()
-        self.__cmap.loadMap("test1.map")
-        print(self.__cmap)
+        self.createRandomMap()
         
 
     def createPopulation(self, args): 
@@ -26,6 +24,20 @@ class Repository():
 
     def getMap(self):
         return self.__cmap
+
+
+    def createRandomMap(self):
+        self.__cmap = Map()
+        self.__cmap.randomMap()
+
+    
+    def loadMap(self, fileName):
+        self.__cmap = Map()
+        self.__cmap.loadMap(fileName)
+
+
+    def saveMap(self, fileName):
+        self.__cmap.saveMap(fileName)
 
 
     def getTheMostRecentPopulation(self):

@@ -18,7 +18,7 @@ class Controller():
         # selection of the survivors
 
         population = self.__repository.getTheMostRecentPopulation()
-        population.evaluate() 
+        populationFitness = population.evaluate() 
         #print("POPULATION={}".format(population.getAllIndividuals()))
         parents = population.selection(args[0])
 
@@ -42,7 +42,11 @@ class Controller():
         fitnesses = np.array(population.getFitnesses())
         self.__repository.addNewPopulation(population)
 
-        return (np.average(fitnesses), np.std(fitnesses))
+        mean = np.average(fitnesses)
+        standardDeviation = np.std(fitnesses)
+        normalizedStandardDeviation = standardDeviation/mean
+
+        return (mean, standardDeviation, normalizedStandardDeviation)
 
     
     def getTheFittestIndividual(self):

@@ -203,6 +203,8 @@ class Population():
             x.fitness(self.__map)
             self.__totalFitness += x.getFitness()
 
+        return self.__totalFitness
+
 
     def getFitnesses(self):
         return [individual.getFitness() for individual in self.__individuals]

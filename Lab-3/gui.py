@@ -149,7 +149,7 @@ class GUI:
         print("fittestIndividual: ")
         print(fittestIndividual)
         map = self.__controller.getMap()
-        self.movingDrone(map, fittestIndividual.getPath(), 10)
+        self.movingDrone(map, fittestIndividual.getPath(), 15)
 
 
     def run(self, args):
@@ -170,7 +170,7 @@ class GUI:
         allIterationAverages = []
         totalAverages = 0
         while generationIndex < numberOfGenerations:
-            average, standardDeviation = self.__controller.iteration([parentsToBeSelected])
+            average, standardDeviation, normalizedStandardDeviation = self.__controller.iteration([parentsToBeSelected])
             allIterationAverages.append(average)
             print("Generation {}: Average={}, Standard deviation={};".format(generationIndex, average, standardDeviation))
             self.refreshPlot(generationIndex, average)

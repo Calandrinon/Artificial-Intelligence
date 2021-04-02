@@ -98,6 +98,8 @@ class UI:
 
     def run(self):
         self.__running = True
+        self.__controller.resetRepository()
+
         while self.__running:
             self.__modifiedMap = False
             self.__getMapOptions() 

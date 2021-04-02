@@ -53,3 +53,7 @@ class Repository():
             population = population.merge(self.__populations[i])
 
         self.__populations = [population]
+
+    def resetRepository(self):
+        self.__populations = []
+        self.createRandomMap()

@@ -116,7 +116,6 @@ class Individual:
             self.__currentPosition = np.add(self.__currentPosition, offset) 
 
             if not self.__validPosition(self.__currentPosition[0], self.__currentPosition[1]): # in case the chromosome leads the drone to go out of the matrix boundaries
-                self.__f = 1
                 return self.__f
 
             if surface[self.__currentPosition[0]][self.__currentPosition[1]] == 1:
@@ -151,8 +150,8 @@ class Individual:
             otherChromosome = otherParent.getChromosome()
             offspring1.setChromosome(self.__chromosome[0:splitPoint] + otherChromosome[splitPoint:])
             offspring2.setChromosome(otherChromosome[0:splitPoint] + self.__chromosome[splitPoint:])
-            return offspring1, offspring2
-        return self, otherParent
+
+        return offspring1, offspring2 
 
 
     def __repr__(self):
@@ -193,6 +192,8 @@ class Population():
 
 
     def getTheFittestIndividual(self):
+        if len(self.__individuals) == 0:
+            raise Exception("No individuals have survived... R.I.P")
         return max(self.__individuals)
         
 
@@ -210,19 +211,40 @@ class Population():
         return [individual.getFitness() for individual in self.__individuals]
             
             
-    def selection(self, k = 0):
+    def selection(self, survivalPhase = False):
         # roulette-wheel selection 
         randomChance = random()
+        if survivalPhase == True:
+            self.evaluate()
+        print("Chance of survival/reproduction: {}".format(randomChance))
         selectedIndividuals = []
         cdf = 0
         self.__individuals.sort(key=lambda x: x.getFitness())
-
+        stuff = 0
         for individual in self.__individuals:
             cdf += individual.getNormalizedFitness(self.__totalFitness) 
             if cdf >= randomChance:
+                print("CDF {} is greater than {}".format(cdf, randomChance))
+                stuff += 1
                 selectedIndividuals.append(individual)
+            else:
+                print("CDF {} is smaller than {}".format(cdf, randomChance))
+        
 
-        return selectedIndividuals 
+        self.__individuals = selectedIndividuals
+        print("{} selected individuals: {}".format(stuff, self.__individuals))
+
+
+    def survivorsSelection(self):
+        chance = 0.5
+        selectedIndividuals = []
+        self.__individuals.sort(key=lambda x: x.getFitness())
+
+        for i in range(int(len(self.__individuals)), int(len(self.__individuals) / 2), -1):
+            selectedIndividuals.append(self.__individuals[i])
+
+        self.__individuals = selectedIndividuals
+        print("New individuals: {}".format(self.__individuals))
 
 
     def merge(self, other):

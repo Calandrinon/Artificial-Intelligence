@@ -20,7 +20,10 @@ class Controller():
         population = self.__repository.getTheMostRecentPopulation()
         populationFitness = population.evaluate() 
         #print("POPULATION={}".format(population.getAllIndividuals()))
-        parents = population.selection(args[0])
+        print("Selecting parents...")
+        population.selection()
+        parents = population.getAllIndividuals()
+        allOffspring = []
 
         while len(parents) >= 2:
             firstParent = parents.pop()
@@ -30,17 +33,20 @@ class Controller():
 
             firstOffspring, secondOffspring = firstParent.crossover(secondParent)
             if firstOffspring == firstParent and secondOffspring == secondParent:
-                population.addIndividual(firstParent)
-                population.addIndividual(secondParent)
                 continue
             firstOffspring.mutate()
             secondOffspring.mutate()
 
-            population.addIndividual(firstOffspring)
-            population.addIndividual(secondOffspring)
+            allOffspring.append(firstOffspring)
+            allOffspring.append(secondOffspring)
 
-        fitnesses = np.array(population.getFitnesses())
+        for individual in allOffspring:
+            population.addIndividual(individual)
+
+        print("Selecting survivors...")
+        population.selection(True)
         self.__repository.addNewPopulation(population)
+        fitnesses = np.array(population.getFitnesses())
 
         mean = np.average(fitnesses)
         standardDeviation = np.std(fitnesses)
@@ -75,3 +81,9 @@ class Controller():
 
     def mergeAllPopulations(self):
         self.__repository.mergePopulations()
+
+    def getPopulationSize(self):
+        return len(self.__repository.getTheMostRecentPopulation().getAllIndividuals())
+
+    def resetRepository(self):
+        self.__repository.resetRepository()

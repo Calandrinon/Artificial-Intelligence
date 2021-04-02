@@ -29,6 +29,8 @@ class GUI:
     def __init__(self, controller):
         self.__controller = controller 
         self.figure, self.axes = plt.subplots()
+        self.axes.set_xlabel("Generation")
+        self.axes.set_ylabel("Average fitness of the generation")
         self.x_axis = []
         self.y_axis = []
 
@@ -145,11 +147,14 @@ class GUI:
 
 
     def renderTheFittestIndividual(self):
-        fittestIndividual = self.__controller.getTheFittestIndividual()
-        print("fittestIndividual: ")
-        print(fittestIndividual)
-        map = self.__controller.getMap()
-        self.movingDrone(map, fittestIndividual.getPath(), 15)
+        try:
+            fittestIndividual = self.__controller.getTheFittestIndividual()
+            print("fittestIndividual: ")
+            print(fittestIndividual)
+            map = self.__controller.getMap()
+            self.movingDrone(map, fittestIndividual.getPath(), 15)
+        except Exception as e:
+            raise Exception("No individuals have survived... R.I.P")
 
 
     def run(self, args):
@@ -172,9 +177,13 @@ class GUI:
         while generationIndex < numberOfGenerations:
             average, standardDeviation, normalizedStandardDeviation = self.__controller.iteration([parentsToBeSelected])
             allIterationAverages.append(average)
-            print("Generation {}: Average={}, Standard deviation={};".format(generationIndex, average, standardDeviation))
+            print("Generation {}: Average={}, Standard deviation={}; Population size: {}".format(generationIndex, average, standardDeviation, self.__controller.getPopulationSize()))
             self.refreshPlot(generationIndex, average)
-            self.renderTheFittestIndividual()
+            try:
+                self.renderTheFittestIndividual()
+            except Exception as e:
+                print("Ashes to ashes, dust to dust...")
+                break
             generationIndex += 1
 
         allIterationAverages = np.array(allIterationAverages)

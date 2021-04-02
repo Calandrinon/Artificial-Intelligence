@@ -213,9 +213,11 @@ class Population():
             
     def selection(self, survivalPhase = False):
         # roulette-wheel selection 
-        randomChance = random()
+        randomChance = 0.05
         if survivalPhase == True:
+            randomChance = 0.05
             self.evaluate()
+
         print("Chance of survival/reproduction: {}".format(randomChance))
         selectedIndividuals = []
         cdf = 0
@@ -229,8 +231,8 @@ class Population():
                 selectedIndividuals.append(individual)
             else:
                 print("CDF {} is smaller than {}".format(cdf, randomChance))
-        
 
+        print("=============================== CDF: {} ===============================".format(cdf))
         self.__individuals = selectedIndividuals
         print("{} selected individuals: {}".format(stuff, self.__individuals))
 

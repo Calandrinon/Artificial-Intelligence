@@ -28,12 +28,12 @@ import math
 class GUI:
     def __init__(self, controller):
         self.__controller = controller 
-        self.figure, self.axes = plt.subplots()
-        self.axes.set_xlabel("Generation")
-        self.axes.set_ylabel("Average fitness of the generation")
         self.x_axis = []
         self.y_axis = []
-
+        self.x_axis2 = []
+        self.y_axis2 = []
+        self.x_axis3 = []
+        self.y_axis3 = []
 
     def initPyGame(self, dimension):
         # init the pygame
@@ -139,10 +139,21 @@ class GUI:
         return imagine        
 
 
-    def refreshPlot(self, generation, averageFitness):
+    def refreshPlot(self, generation, averageFitness, maximumIndividualsFitness, standardDeviation):
+        """
         self.x_axis.append(generation)
         self.y_axis.append(averageFitness)
-        self.axes.plot(self.x_axis, self.y_axis)
+        """
+        self.x_axis2.append(generation)
+        self.y_axis2.append(maximumIndividualsFitness)
+        self.x_axis3.append(generation)
+        self.y_axis3.append(standardDeviation)
+
+        plt.legend(["Average fitness", "Maximum individual's fitness", "Standard deviation"], labelcolor=["blue", "red", "green"])
+
+        plt.plot(self.x_axis, self.y_axis, color="blue")
+        plt.plot(self.x_axis2, self.y_axis2, color="red")
+        plt.plot(self.x_axis3, self.y_axis3, color="green")
         plt.pause(0.05)
 
 
@@ -159,30 +170,39 @@ class GUI:
 
     def run(self, args):
         # args - list of parameters needed in order to run the algorithm
-        # args = [numberOfGenerations, selectedIndividualsFromAGeneration]
-        if len(args) != 2:
+        # args = [numberOfGenerations, numberOfPopulations, selectedIndividualsFromAGeneration]
+        if len(args) != 3:
             raise Exception("The number of parameters is incorrect.")
         
         # until stop condition
         #    perform an iteration
         #    save the information needed for the statistics
         # return the results and the info for statistics
-        parentsToBeSelected = args[1]
 
         generationIndex = 0
         numberOfGenerations = args[0]
-        selectedIndividualsFromAGeneration = args[1]
+        selectedIndividualsFromAGeneration = args[2]
         allIterationAverages = []
         totalAverages = 0
+
         while generationIndex < numberOfGenerations:
-            average, standardDeviation, normalizedStandardDeviation = self.__controller.iteration([parentsToBeSelected])
+            average, standardDeviation, normalizedStandardDeviation = self.__controller.iteration([selectedIndividualsFromAGeneration])
             allIterationAverages.append(average)
             print("Generation {}: Average={}, Standard deviation={}; Population size: {}".format(generationIndex, average, standardDeviation, self.__controller.getPopulationSize()))
-            self.refreshPlot(generationIndex, average)
+            try:
+                fittestIndividual = self.__controller.getTheFittestIndividual()
+            except Exception as e:
+                print("No individuals have survived.")
+                plt.savefig('lastplot.png')
+                break
+
+            self.refreshPlot(generationIndex, average, fittestIndividual.getFitness(), standardDeviation)
+
             try:
                 self.renderTheFittestIndividual()
             except Exception as e:
                 print("Ashes to ashes, dust to dust...")
+                plt.savefig('lastplot.png')
                 break
             generationIndex += 1
 
@@ -193,11 +213,11 @@ class GUI:
 
     def solver(self, args):
         # args - list of parameters needed in order to run the solver
-        # args = [numberOfGenerations, selectedIndividualsFromAGeneration, startingPositionX, startingPositionY, populationSize, individualSize]
+        # args = [numberOfGenerations, numberOfPopulations, selectedIndividualsFromAGeneration, startingPositionX, startingPositionY, populationSize, individualSize]
         
         # create the population,
         # run the algorithm
         # return the results and the statistics
-        average, standardDeviation = self.run(args[:2])
+        average, standardDeviation = self.run(args[:3])
 
         return (average, standardDeviation)

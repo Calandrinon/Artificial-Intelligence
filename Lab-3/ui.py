@@ -19,6 +19,10 @@ class UI:
         populations = int(input("Enter the number of populations:"))
         return populations
 
+    def __getNumberOfSelectedIndividuals(self):
+        selectedIndividuals = int(input("Enter the number of selected individuals: "))
+        return selectedIndividuals
+
 
     def __getStartingPosition(self):
         startX = int(input("Enter the X coordinate of the starting position:"))
@@ -79,7 +83,7 @@ class UI:
     def __startSolver(self):
         numberOfGenerations = self.__getGenerations() 
         numberOfPopulations = self.__getPopulations()
-        selectedIndividualsFromAGeneration = 10
+        selectedIndividualsFromAGeneration = 100 #self.__getNumberOfSelectedIndividuals()
         startingPosition = self.__getStartingPosition() 
         populationSize = self.__getPopulationSize()
         individualSize = self.__getIndividualSize()

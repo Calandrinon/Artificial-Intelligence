@@ -9,7 +9,7 @@ class Controller():
 
     def iteration(self, args):
         # args - list of parameters needed to run one iteration
-        # args = [parentsToBeSelected]
+        # args = [individualsToBeSelected]
 
         # an iteration:
         # selection of the parents
@@ -17,11 +17,14 @@ class Controller():
         # apply some mutations
         # selection of the survivors
 
+        # individualsToBeSelected = args[0]
+        individualsToBeSelected = int(self.getPopulationSize() * (7/8))
+
         population = self.__repository.getTheMostRecentPopulation()
         populationFitness = population.evaluate() 
         #print("POPULATION={}".format(population.getAllIndividuals()))
         print("Selecting parents...")
-        population.selection()
+        population.selection(individualsToBeSelected)
         parents = population.getAllIndividuals()
         allOffspring = []
 
@@ -44,7 +47,8 @@ class Controller():
             population.addIndividual(individual)
 
         print("Selecting survivors...")
-        population.selection(True)
+        individualsToBeSelected = int(self.getPopulationSize() * (8/10))
+        population.selection(individualsToBeSelected)
         self.__repository.addNewPopulation(population)
         fitnesses = np.array(population.getFitnesses())
 
@@ -57,7 +61,10 @@ class Controller():
     
     def getTheFittestIndividual(self):
         population = self.__repository.getTheMostRecentPopulation()
-        return population.getTheFittestIndividual()
+        try:
+            return population.getTheFittestIndividual()
+        except Exception as e:
+            raise Exception("No individuals have survived.")
 
 
     def getMap(self):

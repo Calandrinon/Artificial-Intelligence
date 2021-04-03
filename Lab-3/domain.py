@@ -211,42 +211,17 @@ class Population():
         return [individual.getFitness() for individual in self.__individuals]
             
             
-    def selection(self, survivalPhase = False):
+    def selection(self, k = 0):
         # roulette-wheel selection 
-        randomChance = 0.05
-        if survivalPhase == True:
-            randomChance = 0.05
-            self.evaluate()
-
-        print("Chance of survival/reproduction: {}".format(randomChance))
-        selectedIndividuals = []
-        cdf = 0
-        self.__individuals.sort(key=lambda x: x.getFitness())
-        stuff = 0
-        for individual in self.__individuals:
-            cdf += individual.getNormalizedFitness(self.__totalFitness) 
-            if cdf >= randomChance:
-                print("CDF {} is greater than {}".format(cdf, randomChance))
-                stuff += 1
-                selectedIndividuals.append(individual)
-            else:
-                print("CDF {} is smaller than {}".format(cdf, randomChance))
-
-        print("=============================== CDF: {} ===============================".format(cdf))
-        self.__individuals = selectedIndividuals
-        print("{} selected individuals: {}".format(stuff, self.__individuals))
-
-
-    def survivorsSelection(self):
-        chance = 0.5
         selectedIndividuals = []
         self.__individuals.sort(key=lambda x: x.getFitness())
+        numberOfIndividuals = len(self.__individuals) 
 
-        for i in range(int(len(self.__individuals)), int(len(self.__individuals) / 2), -1):
-            selectedIndividuals.append(self.__individuals[i])
+        for index in range(numberOfIndividuals - 1, int(numberOfIndividuals - k - 1), -1):
+            selectedIndividuals.append(self.__individuals[index])
 
         self.__individuals = selectedIndividuals
-        print("New individuals: {}".format(self.__individuals))
+        print("Selected individuals: {}".format(self.__individuals))
 
 
     def merge(self, other):

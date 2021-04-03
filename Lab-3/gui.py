@@ -140,10 +140,8 @@ class GUI:
 
 
     def refreshPlot(self, generation, averageFitness, maximumIndividualsFitness, standardDeviation):
-        """
         self.x_axis.append(generation)
         self.y_axis.append(averageFitness)
-        """
         self.x_axis2.append(generation)
         self.y_axis2.append(maximumIndividualsFitness)
         self.x_axis3.append(generation)

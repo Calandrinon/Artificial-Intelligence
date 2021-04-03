@@ -1,6 +1,6 @@
 from repository import *
 import numpy as np
-
+import sys
 
 class Controller():
     def __init__(self, repository):
@@ -18,7 +18,8 @@ class Controller():
         # selection of the survivors
 
         # individualsToBeSelected = args[0]
-        individualsToBeSelected = int(self.getPopulationSize() * (7/8))
+        oldPopulationSize = self.getPopulationSize()
+        individualsToBeSelected = int(oldPopulationSize * (95/100))
 
         population = self.__repository.getTheMostRecentPopulation()
         populationFitness = population.evaluate() 
@@ -27,6 +28,7 @@ class Controller():
         population.selection(individualsToBeSelected)
         parents = population.getAllIndividuals()
         allOffspring = []
+        individualsThatReproduced = []
 
         while len(parents) >= 2:
             firstParent = parents.pop()
@@ -40,14 +42,19 @@ class Controller():
             firstOffspring.mutate()
             secondOffspring.mutate()
 
+            individualsThatReproduced.append(firstParent)
+            individualsThatReproduced.append(secondParent)
             allOffspring.append(firstOffspring)
             allOffspring.append(secondOffspring)
 
+        for parent in individualsThatReproduced:
+            population.addIndividual(parent)
         for individual in allOffspring:
             population.addIndividual(individual)
+        population.evaluate()
 
         print("Selecting survivors...")
-        individualsToBeSelected = int(self.getPopulationSize() * (8/10))
+        individualsToBeSelected = int(oldPopulationSize * 85/100)
         population.selection(individualsToBeSelected)
         self.__repository.addNewPopulation(population)
         fitnesses = np.array(population.getFitnesses())
@@ -55,6 +62,10 @@ class Controller():
         mean = np.average(fitnesses)
         standardDeviation = np.std(fitnesses)
         normalizedStandardDeviation = standardDeviation/mean
+
+        if mean == 0:
+            print("Null mean...")
+            sys.exit()
 
         return (mean, standardDeviation, normalizedStandardDeviation)
 

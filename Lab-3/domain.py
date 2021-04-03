@@ -221,7 +221,8 @@ class Population():
             selectedIndividuals.append(self.__individuals[index])
 
         self.__individuals = selectedIndividuals
-        print("Selected individuals: {}".format(self.__individuals))
+        print("Selected individuals' fitnesses: {}".format(self.getFitnesses()))
+        #print("Selected individuals: {}".format(self.__individuals))
 
 
     def merge(self, other):

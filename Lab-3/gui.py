@@ -34,6 +34,7 @@ class GUI:
         self.y_axis2 = []
         self.x_axis3 = []
         self.y_axis3 = []
+        self.__path = None
 
     def initPyGame(self, dimension):
         # init the pygame
@@ -156,14 +157,8 @@ class GUI:
 
 
     def renderTheFittestIndividual(self):
-        try:
-            fittestIndividual = self.__controller.getTheFittestIndividual()
-            print("fittestIndividual: ")
-            print(fittestIndividual)
-            map = self.__controller.getMap()
-            self.movingDrone(map, fittestIndividual.getPath(), 15)
-        except Exception as e:
-            raise Exception("No individuals have survived... R.I.P")
+        map = self.__controller.getMap()
+        self.movingDrone(map, self.__path, 4)
 
 
     def run(self, args):
@@ -172,6 +167,13 @@ class GUI:
         if len(args) != 3:
             raise Exception("The number of parameters is incorrect.")
         
+        self.x_axis = []
+        self.y_axis = []
+        self.x_axis2 = []
+        self.y_axis2 = []
+        self.x_axis3 = []
+        self.y_axis3 = []
+        self.__path = None
         # until stop condition
         #    perform an iteration
         #    save the information needed for the statistics
@@ -189,23 +191,18 @@ class GUI:
             print("Generation {}: Average={}, Standard deviation={}; Population size: {}".format(generationIndex, average, standardDeviation, self.__controller.getPopulationSize()))
             try:
                 fittestIndividual = self.__controller.getTheFittestIndividual()
+                self.__path = fittestIndividual.getPath()
             except Exception as e:
                 print("No individuals have survived.")
                 plt.savefig('lastplot.png')
                 break
 
             self.refreshPlot(generationIndex, average, fittestIndividual.getFitness(), standardDeviation)
-
-            try:
-                self.renderTheFittestIndividual()
-            except Exception as e:
-                print("Ashes to ashes, dust to dust...")
-                plt.savefig('lastplot.png')
-                break
             generationIndex += 1
 
         allIterationAverages = np.array(allIterationAverages)
         plt.show()
+        self.renderTheFittestIndividual()
         return (np.average(allIterationAverages), np.std(allIterationAverages))
 
 

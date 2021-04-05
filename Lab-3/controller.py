@@ -73,9 +73,11 @@ class Controller():
     def getTheFittestIndividual(self):
         population = self.__repository.getTheMostRecentPopulation()
         try:
-            return population.getTheFittestIndividual()
+            fittestIndividual = population.getTheFittestIndividual()
+            self.__fittestIndividual = fittestIndividual
+            return fittestIndividual
         except Exception as e:
-            raise Exception("No individuals have survived.")
+            return self.__fittestIndividual
 
 
     def getMap(self):

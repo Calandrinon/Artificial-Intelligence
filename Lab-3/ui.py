@@ -83,7 +83,7 @@ class UI:
     def __startSolver(self):
         numberOfGenerations = self.__getGenerations() 
         numberOfPopulations = self.__getPopulations()
-        selectedIndividualsFromAGeneration = 100 #self.__getNumberOfSelectedIndividuals()
+        selectedIndividualsFromAGeneration = 100 
         startingPosition = self.__getStartingPosition() 
         populationSize = self.__getPopulationSize()
         individualSize = self.__getIndividualSize()
@@ -95,9 +95,7 @@ class UI:
 
         self.__controller.mergeAllPopulations()
 
-        finalStatistics = self.__gui.solver([numberOfGenerations, numberOfPopulations, selectedIndividualsFromAGeneration, startingPosition[0], startingPosition[1], populationSize, individualSize])
-
-        print("Average & standard deviation of all generations: {}".format(finalStatistics))
+        self.__gui.solver([numberOfGenerations, numberOfPopulations, selectedIndividualsFromAGeneration, startingPosition[0], startingPosition[1], populationSize, individualSize])
 
 
     def run(self):
@@ -113,3 +111,4 @@ class UI:
 
             if not self.__modifiedMap:
                 self.__startSolver()
+                self.__running = False

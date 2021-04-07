@@ -1,4 +1,6 @@
 from constants import *
+import pickle
+import numpy as np
 
 class Sensor:
     def __init__(self, x, y):
@@ -43,7 +45,35 @@ class Sensor:
             raise Exception("The maximum feasible area for each energy level has not yet been computed.")
         return self.__areas[energyLevel]
 
+
+class Drone:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+
+    def setPosition(self, x, y):
+        self.x = x
+        self.y = y
+
+
+    def setEnergy(self, energy):
+        self.__energy = energy
+
+
+    def getEnergy(self):
+        return self.__energy
+
+
+    def getPosition(self):
+        return (self.x, self.y)
+
+                  
+    def mapWithDrone(self, mapImage):
+        drona = pygame.image.load("drona.png")
+        mapImage.blit(drona, (self.y * 20, self.x * 20))
         
+        return mapImage
 
 
 class Map:

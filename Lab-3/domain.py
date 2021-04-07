@@ -36,7 +36,7 @@ class Individual:
     def getChromosome(self):
         return self.__chromosome
 
-    
+
     def incrementAge(self):
         self.__age += 1
 
@@ -117,6 +117,7 @@ class Individual:
 
             if not self.__validPosition(self.__currentPosition[0], self.__currentPosition[1]): # in case the chromosome leads the drone to go out of the matrix boundaries
                 return self.__f
+
 
             if surface[self.__currentPosition[0]][self.__currentPosition[1]] == 1:
                 return self.__f
@@ -212,7 +213,6 @@ class Population():
             
             
     def selection(self, k = 0):
-        # roulette-wheel selection 
         selectedIndividuals = []
         self.__individuals.sort(key=lambda x: x.getFitness())
         numberOfIndividuals = len(self.__individuals) 

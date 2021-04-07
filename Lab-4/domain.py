@@ -10,12 +10,12 @@ class Sensor:
         self.__currentEnergyLevel = 0
 
 
-    def getX(self):
-        return self.__x
+    def getPosition(self):
+        return (self.__x, self.__y)
 
 
-    def getY(self):
-        return self.__y
+    def getMaximumUsefulEnergyLevel(self):
+        return len(self.__areas)
 
 
     def getEnergyLevel(self):
@@ -24,25 +24,33 @@ class Sensor:
 
     def computeMaximumFeasibleArea(self, map):
         directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-        numberOfCellsSurveilled = 0 
-        
+
         for energyLevel in range(1, 6):
+            energyLevelAreas = []
+
             for direction in directions:
                 possibleCoveredAreaX = self.__x + energyLevel*direction[0]
                 possibleCoveredAreaY = self.__y + energyLevel*direction[1]
 
-                if map.isTheCellAWall(possibleCoveredAreaX, possibleCoveredAreaY) or not isPositionWithinBoundaries(possibleCoveredAreaX, possibleCoveredAreaY):
+                if map.isTheCellAWall(possibleCoveredAreaX, possibleCoveredAreaY) or not map.isPositionWithinBoundaries(possibleCoveredAreaX, possibleCoveredAreaY):
                     positionToBeDeleted = directions.index(direction)
-                    del directions[positionToBeDeleted]
+                    directions[positionToBeDeleted] = 0
                 else:
-                    numberOfCellsSurveilled += 1             
-            
-            self.__areas.append(numberOfCellsSurveilled)
+                    energyLevelAreas.append((possibleCoveredAreaX, possibleCoveredAreaY))
+
+            directions = list(filter(lambda x: x != 0, directions))
+            self.__areas.append(energyLevelAreas)
+
+        self.__areas = list(filter(lambda x: x != [], self.__areas))
 
 
-    def getSurveillanceAreaByEnergyLevel(self, energyLevel):
+    def getSurveillanceAreaByEnergyLevel(self, energyLevel, map):
         if not self.__areas: 
-            raise Exception("The maximum feasible area for each energy level has not yet been computed.")
+            self.computeMaximumFeasibleArea(map)
+
+        areas = []
+        for level in range(1, energyLevel+1):
+            areas.append(self.__areas[level])
         return self.__areas[energyLevel]
 
 

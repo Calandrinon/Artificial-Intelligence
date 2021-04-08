@@ -61,14 +61,16 @@ class UI:
             surveillanceArea = sensor.getSurveillanceAreaByEnergyLevel(energyLevel, self.__controller.getMap())
             for position in surveillanceArea:
                 self.__screen.blit(coveredAreaTexture, (position[1]*MAP_SIZE, position[0]*MAP_SIZE))
+        
+        print("Maximum level of useful energy for the sensor on position {}: {}".format(sensor.getPosition(), sensor.getMaximumUsefulEnergyLevel()))
 
 
     def displaySensors(self):
         sensors = self.__controller.getSensors()
+        sensorTexture = pygame.Surface((20,20))
+        sensorTexture.fill(BLACK)
+
         for sensor in sensors:
-            sensorTexture = pygame.Surface((20,20))
-            sensorTexture.fill(BLACK)
-            print("sensor position: {}".format(sensor.getPosition()))
             sensorPosition = sensor.getPosition()
             self.__screen.blit(sensorTexture, (sensorPosition[1]*MAP_SIZE, sensorPosition[0]*MAP_SIZE))
             self.displayMaximumSurveillanceAreaOfASensor(sensor)

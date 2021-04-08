@@ -32,7 +32,7 @@ class Sensor:
                 possibleCoveredAreaX = self.__x + energyLevel*direction[0]
                 possibleCoveredAreaY = self.__y + energyLevel*direction[1]
 
-                if map.isTheCellAWall(possibleCoveredAreaX, possibleCoveredAreaY) or not map.isPositionWithinBoundaries(possibleCoveredAreaX, possibleCoveredAreaY):
+                if map.isTheCellAWall(possibleCoveredAreaX, possibleCoveredAreaY):
                     positionToBeDeleted = directions.index(direction)
                     directions[positionToBeDeleted] = 0
                 else:
@@ -126,6 +126,8 @@ class Map:
 
 
     def isTheCellAWall(self, x, y):
+        if not self.isPositionWithinBoundaries(x, y):
+            return True 
         return self.surface[x][y] == 1
         
 

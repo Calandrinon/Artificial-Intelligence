@@ -79,8 +79,7 @@ class Sensor:
 
         for sensor in allSensors:
             position = sensor.getPosition()
-            if position != self.getPosition():
-                self.__distancesToOtherSensors[sensor.getPosition()] = distances[position[0]][position[1]] - 1
+            self.__distancesToOtherSensors[sensor] = distances[position[0]][position[1]] - 1 if position != self.getPosition() else 0
 
 
 class Drone:

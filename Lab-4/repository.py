@@ -19,6 +19,7 @@ class Repository:
 
     def createDrone(self, positionAsList, energy):
         self.__drone = Drone(*positionAsList)
+        self.__drone.setEnergy(energy)
 
 
     def getSensors(self):

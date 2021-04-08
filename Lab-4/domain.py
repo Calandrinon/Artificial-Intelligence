@@ -8,6 +8,7 @@ class Sensor:
         self.__y = y
         self.__areas = [] # the list that stores how many cells can be seen with an energy level i
         self.__currentEnergyLevel = 0
+        self.__distancesToOtherSensors = {}
 
 
     def getPosition(self):
@@ -20,6 +21,10 @@ class Sensor:
 
     def getEnergyLevel(self):
         return self.__currentEnergyLevel
+
+    
+    def getDistancesToOtherSensors(self):
+        return self.__distancesToOtherSensors
 
 
     def computeMaximumFeasibleArea(self, map):
@@ -52,6 +57,30 @@ class Sensor:
         for level in range(1, energyLevel+1):
             areas.append(self.__areas[level])
         return self.__areas[energyLevel]
+
+
+    def breadthFirstSearch(self, map, allSensors):
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        queue = [(self.__x, self.__y)]
+        distances = [[0 for j in range(0, map.m)] for i in range(0, map.n)]
+        visited = [[0 for j in range(0, map.m)] for i in range(0, map.n)]
+
+        while queue:
+            currentX, currentY = queue.pop(0)
+            visited[currentX][currentY] = 1
+
+            for direction in directions:
+                nextX = currentX + direction[0]
+                nextY = currentY + direction[1]
+
+                if not map.isTheCellAWall(nextX, nextY) and visited[nextX][nextY] == 0:
+                    queue.append((nextX, nextY))
+                    distances[nextX][nextY] = distances[currentX][currentY] + 1
+
+        for sensor in allSensors:
+            position = sensor.getPosition()
+            if position != self.getPosition():
+                self.__distancesToOtherSensors[sensor.getPosition()] = distances[position[0]][position[1]] - 1
 
 
 class Drone:

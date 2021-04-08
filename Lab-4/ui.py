@@ -76,6 +76,16 @@ class UI:
             self.displayMaximumSurveillanceAreaOfASensor(sensor)
             pygame.display.flip()
 
+        self.printDistancesBetweenSensors()
+
+
+    def printDistancesBetweenSensors(self):
+        self.__controller.computeDistancesBetweenPairsOfSensors()
+        sensors = self.__controller.getSensors()
+
+        for sensor in sensors:
+            print("Distances to other sensors for the sensor {} on position {}: {}".format(sensor, sensor.getPosition(), sensor.getDistancesToOtherSensors()))
+
 
     def run(self):
         self.displayMap()

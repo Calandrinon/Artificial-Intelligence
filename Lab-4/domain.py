@@ -2,6 +2,7 @@ from constants import *
 import pickle
 import numpy as np
 import copy
+import random
 
 class Sensor:
     total = -1
@@ -91,14 +92,23 @@ class Sensor:
             self.__distancesToOtherSensors[sensor.getId()] = distances[position[0]][position[1]] - 1 if position != self.getPosition() else 0
 
 
+    def __repr__(self):
+        return "|Sensor {} at position {}|".format(self.getId(), self.getPosition())
+
+
 class SensorGraph:
     def __init__(self, sensors):
         self.__sensors = sensors
         self.__costMatrix = [sensor.getDistancesToOtherSensors() for sensor in sensors]
-        self.__pheromoneMatrix = [[0 for i in range(0, len(self.__sensors))] for sensor in sensors]
-        print("Pheromone matrix: ")
-        for line in self.__pheromoneMatrix:
-            print(line)
+        self.__pheromoneMatrix = [[0.01 for i in range(0, len(self.__sensors))] for sensor in sensors]
+
+
+    def getSensors(self):
+        return self.__sensors
+
+
+    def getNumberOfSensors(self):
+        return len(self.__sensors)
 
 
     def eta(self, indexOfSensorI, indexOfSensorJ, beta):
@@ -110,14 +120,35 @@ class SensorGraph:
 
 
     def __repr__(self):
-        print("testing eta: {}".format(self.eta(0, 1, 1)))
-        return str(self.__costMatrix)
+        stringRepresentation = "Cost matrix:\n"
+        for line in self.__costMatrix:
+            stringRepresentation += str(line) + "\n"
+        stringRepresentation += "Pheromone matrix:\n"    
+        for line in self.__pheromoneMatrix:
+            stringRepresentation += str(line) + "\n"
+
+        return stringRepresentation
 
 
 class Drone:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
+
+    def setGraph(self, graph):
+        self.__graph = graph
+        self.__visitedSensors = {}
+        self.__path = []
+
+        for node in graph.getSensors():
+            self.__visitedSensors[node.getId()] = False
+
+        print("Visited sensors list: {}".format(self.__visitedSensors))
+
+
+    def getGraph(self):
+        return self.__graph
 
 
     def setPosition(self, x, y):
@@ -142,6 +173,57 @@ class Drone:
         mapImage.blit(drona, (self.y * 20, self.x * 20))
         
         return mapImage
+
+
+    def computeTheDesirabilityOfTheNeighbourNodes(self, currentNode):
+        feasibleExpansions = []
+
+        for sensor in self.__getUnmarkedSensors():
+            if currentNode.getId() != sensor.getId():
+                tauAndEtaProductNumerator = self.__graph.tau(currentNode.getId(), sensor.getId(), 1) * self.__graph.eta(currentNode.getId(), sensor.getId(), 1)
+                feasibleExpansions.append((tauAndEtaProductNumerator, sensor))
+
+        productDenominator = sum([nodeDesirability[0] for nodeDesirability in feasibleExpansions])
+        print("productDenominator: {}".format(productDenominator))
+        desirabilityOfTheNeighbourNodes = list(map(lambda x: (x[0] / productDenominator, x[1]), feasibleExpansions))
+        print("desirabilityOfTheNeighbourNodes: {}".format(desirabilityOfTheNeighbourNodes))
+
+        return desirabilityOfTheNeighbourNodes
+
+
+    def __getMarkedSensors(self):
+        return list(filter(lambda x: self.__visitedSensors[x.getId()] == True, self.__graph.getSensors()))
+
+
+    def __getUnmarkedSensors(self):
+        return list(filter(lambda x: self.__visitedSensors[x.getId()] == False, self.__graph.getSensors()))
+            
+
+    def startEdgeSelection(self):
+        currentSensorNode = list(filter(lambda x: x.getPosition() == (self.x, self.y), self.__graph.getSensors()))[0]
+        sensorIndex = currentSensorNode.getId()
+        print("The drone is near the sensor {} at position {}.".format(sensorIndex, currentSensorNode.getPosition()))
+        self.__path.append(currentSensorNode)
+        
+        while len(self.__path) != len(self.__graph.getSensors()):
+            if self.__visitedSensors[sensorIndex] == False: # check if the node was visited
+                self.__visitedSensors[sensorIndex] = True
+                desirabilityOfTheNeighbourNodes = self.computeTheDesirabilityOfTheNeighbourNodes(currentSensorNode)
+                desirabilityOfTheNeighbourNodes.sort(key=lambda x: x[0]) # the second element of each tuple is the sensor, whereas the first element is the desirability
+
+                randomChance = random.random()
+                cumulativeSum = 0
+
+                for nodeDesirability in desirabilityOfTheNeighbourNodes:
+                    cumulativeSum += nodeDesirability[0]
+                    if randomChance <= cumulativeSum:
+                        currentSensorNode = nodeDesirability[1]
+                        sensorIndex = currentSensorNode.getId()
+                        self.__path.append(currentSensorNode)
+                        break
+                
+                print("Added node {} to path: {}".format(sensorIndex, self.__path))
+        print("Drone's path: {}".format(self.__path))
 
 
 class Map:

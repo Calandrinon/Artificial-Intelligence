@@ -23,3 +23,7 @@ class Controller:
 
     def getGraph(self):
         return self.__repository.getGraph()
+
+
+    def getDrone(self):
+        return self.__repository.getDrone()

@@ -92,8 +92,13 @@ class UI:
         print(self.__controller.getGraph())
 
 
+    def printDronePosition(self):
+        self.__controller.getDrone().startEdgeSelection()
+
+
     def run(self):
         self.displayMap()
         self.displaySensors()
         self.printDummyGraph()
+        self.printDronePosition()
         self.closePygameOnEvent()    

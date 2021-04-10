@@ -6,21 +6,26 @@ class Repository:
         self.__map = Map()
         self.__sensors = []
         self.readConfigFile("parameters.json")
-        self.__sensorGraph = SensorGraph(self.__sensors)
 
 
     def readConfigFile(self, configFile):
         with open(configFile) as jsonFile:
             data = json.load(jsonFile)
-            self.createDrone(data["dronePosition"], data["droneEnergy"])
             self.__sensors = [Sensor(position[0], position[1]) for position in data["sensors"]]
+            self.__sensorGraph = SensorGraph(self.__sensors)
             self.__map.loadMap(data["mapFile"])
+            self.createDrone(data["dronePosition"], data["droneEnergy"])
             print(data)
 
 
     def createDrone(self, positionAsList, energy):
         self.__drone = Drone(*positionAsList)
         self.__drone.setEnergy(energy)
+        self.__drone.setGraph(self.__sensorGraph)
+
+
+    def getDrone(self):
+        return self.__drone
 
 
     def getSensors(self):

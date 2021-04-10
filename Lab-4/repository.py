@@ -12,6 +12,7 @@ class Repository:
     def readConfigFile(self, configFile):
         with open(configFile) as jsonFile:
             data = json.load(jsonFile)
+            self.__alpha, self.__beta, self.__rho = data["alpha"], data["beta"], data["rho"]
             self.__sensors = [Sensor(position[0], position[1]) for position in data["sensors"]]
             self.__sensorGraph = SensorGraph(self.__sensors)
             self.__map.loadMap(data["mapFile"])
@@ -50,6 +51,10 @@ class Repository:
     
     def getNumberOfIterations(self):
         return self.__numberOfIterations
+
+
+    def getAlphaBetaAndRho(self):
+        return (self.__alpha, self.__beta, self.__rho)
 
 
     def getMap(self):

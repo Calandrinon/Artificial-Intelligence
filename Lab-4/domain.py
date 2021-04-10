@@ -134,7 +134,7 @@ class SensorGraph:
         return stringRepresentation
 
 
-    def __applyPheromoneEvaporation(self, rho = 0.95):
+    def __applyPheromoneEvaporation(self, rho):
         for i in range(0, len(self.__sensors)):
             for j in range(0, i):
                 self.__pheromoneMatrix[i][j] *= (1 - rho)
@@ -155,8 +155,8 @@ class SensorGraph:
         self.__pheromoneMatrix[sensorI][sensorJ] += deltaTau
 
 
-    def updatePheromoneLevels(self, drones):
-        self.__applyPheromoneEvaporation()
+    def updatePheromoneLevels(self, drones, rho):
+        self.__applyPheromoneEvaporation(rho)
         for drone in drones:
             path = drone.getPath()
             for index in range(0, len(path)-1):
@@ -235,11 +235,10 @@ class Drone:
 
         for sensor in self.__getUnmarkedSensors():
             if currentNode.getId() != sensor.getId():
-                tauAndEtaProductNumerator = self.__graph.tau(currentNode.getId(), sensor.getId(), 1) * self.__graph.eta(currentNode.getId(), sensor.getId(), 1)
+                tauAndEtaProductNumerator = self.__graph.tau(currentNode.getId(), sensor.getId(), self.__alpha) * self.__graph.eta(currentNode.getId(), sensor.getId(), self.__beta)
                 feasibleExpansions.append((tauAndEtaProductNumerator, sensor))
 
         productDenominator = sum([nodeDesirability[0] for nodeDesirability in feasibleExpansions])
-        print("productDenominator: {}".format(productDenominator))
         desirabilityOfTheNeighbourNodes = list(map(lambda x: (x[0] / productDenominator, x[1]), feasibleExpansions))
 
         return desirabilityOfTheNeighbourNodes
@@ -253,11 +252,12 @@ class Drone:
         return list(filter(lambda x: self.__visitedSensors[x.getId()] == False, self.__graph.getSensors()))
             
 
-    def startEdgeSelection(self):
+    def startEdgeSelection(self, alpha, beta):
+        self.__alpha, self.__beta = alpha, beta
+        print("------------------------------------------------------------------------------------------------------------------")
         self.resetGraph()
         currentSensorNode = list(filter(lambda x: x.getPosition() == (self.x, self.y), self.__graph.getSensors()))[0]
         sensorIndex = currentSensorNode.getId()
-        print("------------------------------------------------------------------------------------------------------------------")
         print("The drone {} is near the sensor {} at position {}.".format(self.__id, sensorIndex, currentSensorNode.getPosition()))
         self.__path.append(currentSensorNode)
         
@@ -266,7 +266,6 @@ class Drone:
                 self.__visitedSensors[sensorIndex] = True
                 desirabilityOfTheNeighbourNodes = self.computeTheDesirabilityOfTheNeighbourNodes(currentSensorNode)
                 desirabilityOfTheNeighbourNodes.sort(key=lambda x: x[0]) # the second element of each tuple is the sensor, whereas the first element is the desirability
-                print("desirabilityOfTheNeighbourNodes: {}".format(desirabilityOfTheNeighbourNodes))
 
                 randomChance = random.random()
                 cumulativeSum = 0
@@ -280,7 +279,6 @@ class Drone:
                         self.__path.append(currentSensorNode)
                         break
                 
-                print("Added node {} to path: {}".format(sensorIndex, self.__path))
         self.__totalPathCost += self.__graph.getEdgeCost(self.__path[0].getId(), self.__path[-1].getId())
         print("Drone's path: {}".format(self.__path))
         print("Path cost: {}".format(self.__totalPathCost))

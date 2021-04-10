@@ -101,4 +101,5 @@ class UI:
         self.displaySensors()
         self.printDummyGraph()
         self.startIterations()
+        print("Done.")
         self.closePygameOnEvent()    

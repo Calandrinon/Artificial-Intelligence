@@ -23,11 +23,12 @@ class Controller:
 
     def runEdgeSelectionAndPheromoneUpdate(self):
         drones = self.__repository.getDrones()
+        alpha, beta, rho = self.__repository.getAlphaBetaAndRho()
 
         for drone in drones:
-            drone.startEdgeSelection()
-        
-        self.__repository.getGraph().updatePheromoneLevels(drones)
+            drone.startEdgeSelection(alpha, beta)
+
+        self.__repository.getGraph().updatePheromoneLevels(drones, rho)
         
     
     def runMultipleIterations(self):

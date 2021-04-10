@@ -134,6 +134,36 @@ class SensorGraph:
         return stringRepresentation
 
 
+    def __applyPheromoneEvaporation(self, rho = 0.95):
+        for i in range(0, len(self.__sensors)):
+            for j in range(0, i):
+                self.__pheromoneMatrix[i][j] *= (1 - rho)
+        """
+        This old version would most likely apply evaporation on each edge twice, because
+        the graph is a symmetric matrix.
+
+        for sensorI in self.__sensors:
+            for sensorJ in self.__sensors:
+                self.__pheromoneMatrix[sensorI.getId()][sensorJ.getId()] *= (1-rho)
+        """
+
+
+    def __updatePheromoneOnTheEdge(self, drone, sensorI, sensorJ):
+        sensorI = sensorI.getId()
+        sensorJ = sensorJ.getId()
+        deltaTau = 1 / drone.getPathCost()
+        self.__pheromoneMatrix[sensorI][sensorJ] += deltaTau
+
+
+    def updatePheromoneLevels(self, drones):
+        self.__applyPheromoneEvaporation()
+        for drone in drones:
+            path = drone.getPath()
+            for index in range(0, len(path)-1):
+                self.__updatePheromoneOnTheEdge(drone, path[index], path[index+1])
+            self.__updatePheromoneOnTheEdge(drone, path[-1], path[0])
+
+
 class Drone:
     def __init__(self, x, y):
         self.x = x
@@ -150,6 +180,14 @@ class Drone:
             self.__visitedSensors[node.getId()] = False
 
         print("Visited sensors list: {}".format(self.__visitedSensors))
+
+
+    def getPath(self):
+        return self.__path
+
+
+    def getPathCost(self):
+        return self.__totalPathCost
 
 
     def getGraph(self):

@@ -103,6 +103,10 @@ class SensorGraph:
         self.__pheromoneMatrix = [[0.01 for i in range(0, len(self.__sensors))] for sensor in sensors]
 
 
+    def getEdgeCost(self, indexOfSensorI, indexOfSensorJ):
+        return self.__costMatrix[indexOfSensorI][indexOfSensorJ]
+
+
     def getSensors(self):
         return self.__sensors
 
@@ -140,6 +144,7 @@ class Drone:
         self.__graph = graph
         self.__visitedSensors = {}
         self.__path = []
+        self.__totalPathCost = 0
 
         for node in graph.getSensors():
             self.__visitedSensors[node.getId()] = False
@@ -186,7 +191,6 @@ class Drone:
         productDenominator = sum([nodeDesirability[0] for nodeDesirability in feasibleExpansions])
         print("productDenominator: {}".format(productDenominator))
         desirabilityOfTheNeighbourNodes = list(map(lambda x: (x[0] / productDenominator, x[1]), feasibleExpansions))
-        print("desirabilityOfTheNeighbourNodes: {}".format(desirabilityOfTheNeighbourNodes))
 
         return desirabilityOfTheNeighbourNodes
 
@@ -210,6 +214,7 @@ class Drone:
                 self.__visitedSensors[sensorIndex] = True
                 desirabilityOfTheNeighbourNodes = self.computeTheDesirabilityOfTheNeighbourNodes(currentSensorNode)
                 desirabilityOfTheNeighbourNodes.sort(key=lambda x: x[0]) # the second element of each tuple is the sensor, whereas the first element is the desirability
+                print("desirabilityOfTheNeighbourNodes: {}".format(desirabilityOfTheNeighbourNodes))
 
                 randomChance = random.random()
                 cumulativeSum = 0
@@ -217,13 +222,16 @@ class Drone:
                 for nodeDesirability in desirabilityOfTheNeighbourNodes:
                     cumulativeSum += nodeDesirability[0]
                     if randomChance <= cumulativeSum:
+                        self.__totalPathCost += self.__graph.getEdgeCost(currentSensorNode.getId(), nodeDesirability[1].getId())
                         currentSensorNode = nodeDesirability[1]
                         sensorIndex = currentSensorNode.getId()
                         self.__path.append(currentSensorNode)
                         break
                 
                 print("Added node {} to path: {}".format(sensorIndex, self.__path))
+        self.__totalPathCost += self.__graph.getEdgeCost(self.__path[0].getId(), self.__path[-1].getId())
         print("Drone's path: {}".format(self.__path))
+        print("Path cost: {}".format(self.__totalPathCost))
 
 
 class Map:

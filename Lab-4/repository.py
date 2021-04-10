@@ -15,6 +15,7 @@ class Repository:
             self.__sensors = [Sensor(position[0], position[1]) for position in data["sensors"]]
             self.__sensorGraph = SensorGraph(self.__sensors)
             self.__map.loadMap(data["mapFile"])
+            self.__numberOfIterations = data["numberOfIterations"]
             self.createDrones(data["dronePosition"], data["numberOfDrones"], data["droneEnergy"])
             print(data)
 
@@ -45,6 +46,10 @@ class Repository:
 
     def getGraph(self):
         return self.__sensorGraph
+
+    
+    def getNumberOfIterations(self):
+        return self.__numberOfIterations
 
 
     def getMap(self):

@@ -21,6 +21,22 @@ class Controller:
         return sensor.getDistancesToOtherSensors()
 
 
+    def runEdgeSelectionAndPheromoneUpdate(self):
+        drones = self.__repository.getDrones()
+
+        for drone in drones:
+            drone.startEdgeSelection()
+        
+        self.__repository.getGraph().updatePheromoneLevels(drones)
+        
+    
+    def runMultipleIterations(self):
+        numberOfIterations = self.__repository.getNumberOfIterations()
+        for iterationIndex in range(0, numberOfIterations):
+            print("--------------------------------------- Iteration {} ---------------------------------------".format(iterationIndex))
+            self.runEdgeSelectionAndPheromoneUpdate()
+
+
     def getGraph(self):
         return self.__repository.getGraph()
 

@@ -165,9 +165,17 @@ class SensorGraph:
 
 
 class Drone:
+    total = -1
+
     def __init__(self, x, y):
+        Drone.total += 1
         self.x = x
         self.y = y
+        self.__id = Drone.total
+
+
+    def getId(self):
+        return self.__id
 
 
     def setGraph(self, graph):
@@ -180,6 +188,10 @@ class Drone:
             self.__visitedSensors[node.getId()] = False
 
         print("Visited sensors list: {}".format(self.__visitedSensors))
+
+    
+    def resetGraph(self):
+        self.setGraph(self.__graph) 
 
 
     def getPath(self):
@@ -242,9 +254,11 @@ class Drone:
             
 
     def startEdgeSelection(self):
+        self.resetGraph()
         currentSensorNode = list(filter(lambda x: x.getPosition() == (self.x, self.y), self.__graph.getSensors()))[0]
         sensorIndex = currentSensorNode.getId()
-        print("The drone is near the sensor {} at position {}.".format(sensorIndex, currentSensorNode.getPosition()))
+        print("------------------------------------------------------------------------------------------------------------------")
+        print("The drone {} is near the sensor {} at position {}.".format(self.__id, sensorIndex, currentSensorNode.getPosition()))
         self.__path.append(currentSensorNode)
         
         while len(self.__path) != len(self.__graph.getSensors()):

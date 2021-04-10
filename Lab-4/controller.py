@@ -19,3 +19,7 @@ class Controller:
             sensor.breadthFirstSearch(map, sensors)
 
         return sensor.getDistancesToOtherSensors()
+
+
+    def getGraph(self):
+        return self.__repository.getGraph()

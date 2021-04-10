@@ -6,6 +6,7 @@ class Repository:
         self.__map = Map()
         self.__sensors = []
         self.readConfigFile("parameters.json")
+        self.__sensorGraph = SensorGraph(self.__sensors)
 
 
     def readConfigFile(self, configFile):
@@ -24,6 +25,10 @@ class Repository:
 
     def getSensors(self):
         return self.__sensors
+
+
+    def getGraph(self):
+        return self.__sensorGraph
 
 
     def getMap(self):

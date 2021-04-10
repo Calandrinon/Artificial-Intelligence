@@ -1,14 +1,23 @@
 from constants import *
 import pickle
 import numpy as np
+import copy
 
 class Sensor:
+    total = -1
+
     def __init__(self, x, y):
+        Sensor.total += 1
         self.__x = x
         self.__y = y
         self.__areas = [] # the list that stores how many cells can be seen with an energy level i
         self.__currentEnergyLevel = 0
         self.__distancesToOtherSensors = {}
+        self.__id = Sensor.total
+
+
+    def getId(self):
+        return self.__id
 
 
     def getPosition(self):
@@ -79,7 +88,30 @@ class Sensor:
 
         for sensor in allSensors:
             position = sensor.getPosition()
-            self.__distancesToOtherSensors[sensor] = distances[position[0]][position[1]] - 1 if position != self.getPosition() else 0
+            self.__distancesToOtherSensors[sensor.getId()] = distances[position[0]][position[1]] - 1 if position != self.getPosition() else 0
+
+
+class SensorGraph:
+    def __init__(self, sensors):
+        self.__sensors = sensors
+        self.__costMatrix = [sensor.getDistancesToOtherSensors() for sensor in sensors]
+        self.__pheromoneMatrix = [[0 for i in range(0, len(self.__sensors))] for sensor in sensors]
+        print("Pheromone matrix: ")
+        for line in self.__pheromoneMatrix:
+            print(line)
+
+
+    def eta(self, indexOfSensorI, indexOfSensorJ, beta):
+        return (1 / self.__costMatrix[indexOfSensorI][indexOfSensorJ])**beta
+
+
+    def tau(self, indexOfSensorI, indexOfSensorJ, alpha):
+        return self.__pheromoneMatrix[indexOfSensorI][indexOfSensorJ]**alpha
+
+
+    def __repr__(self):
+        print("testing eta: {}".format(self.eta(0, 1, 1)))
+        return str(self.__costMatrix)
 
 
 class Drone:

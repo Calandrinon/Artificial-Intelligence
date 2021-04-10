@@ -84,10 +84,16 @@ class UI:
         sensors = self.__controller.getSensors()
 
         for sensor in sensors:
-            print("Distances to other sensors for the sensor {} on position {}: {}".format(sensor, sensor.getPosition(), sensor.getDistancesToOtherSensors()))
+            print("Distances to other sensors for the sensor {} on position {}: {}".format(sensor.getId(), sensor.getPosition(), sensor.getDistancesToOtherSensors()))
+
+
+    def printDummyGraph(self):
+        print("Sensor graph:")
+        print(self.__controller.getGraph())
 
 
     def run(self):
         self.displayMap()
         self.displaySensors()
+        self.printDummyGraph()
         self.closePygameOnEvent()    

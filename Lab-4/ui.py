@@ -103,12 +103,28 @@ class UI:
         plt.show()
 
 
+    def displayFinalSurveilledAreaForEachSensor(self, energyDistribution):
+        coveredAreaTexture = pygame.Surface((20,20))
+        coveredAreaTexture.fill(YELLOWISH_GREEN) 
+
+        sensors = self.__controller.getSensors()
+        for sensor in sensors:
+            for energyLevel in range(0, energyDistribution[sensor.getId()][0]):
+                surveillanceArea = sensor.getSurveillanceAreaByEnergyLevel(energyLevel, self.__controller.getMap())
+                for position in surveillanceArea:
+                    self.__screen.blit(coveredAreaTexture, (position[1]*MAP_SIZE, position[0]*MAP_SIZE))
+        
+        pygame.display.flip()
+
+
     def startIterations(self):
         droneEnergyDistributionAmongAllSensors = self.__controller.runMultipleIterations()
         numberOfSensors = self.__controller.getTheNumberOfSensors()
 
         for sensorIndex in range(0, numberOfSensors):
             print("The energy level distributed to Sensor no. {}: {}".format(sensorIndex, droneEnergyDistributionAmongAllSensors[sensorIndex]))
+
+        self.displayFinalSurveilledAreaForEachSensor(droneEnergyDistributionAmongAllSensors) 
 
 
     def run(self):

@@ -56,8 +56,7 @@ class Controller:
             self.addIterationIndexAndPathLength(iterationIndex, self.getAveragePathLengthForAllDrones())
 
         drones = self.__repository.getDrones()
-        randomDroneIndex = randint(0, len(drones))
-        return drones[randomDroneIndex].getTheAmountOfEnergyGivenToEachSensor()
+        return drones[0].getTheAmountOfEnergyGivenToEachSensor()
 
 
     def getGraph(self):

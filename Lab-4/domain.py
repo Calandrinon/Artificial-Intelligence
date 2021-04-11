@@ -255,7 +255,7 @@ class Drone:
 
     def computeTheSensorEnergyBasedOnTheRemainingDroneEnergy(self):
         remainingEnergy = self.getRemainingEnergyAfterCompletingTheTour()
-        print("The remaining energy of the drone {}:".format(remainingEnergy))
+        print("The remaining energy of the drone {}: {}".format(self.getId(), remainingEnergy))
         totalNumberOfSurveilledCellsInTheGraph = self.__graph.getTotalNumberOfSurveilledCells()
         sensors = self.__graph.getSensors()
 

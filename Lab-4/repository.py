@@ -7,6 +7,8 @@ class Repository:
         self.__sensors = []
         self.__drones = []
         self.readConfigFile("parameters.json")
+        self.__iterationIndexes = []
+        self.__bestPathLengths = []
 
 
     def readConfigFile(self, configFile):
@@ -55,6 +57,18 @@ class Repository:
 
     def getAlphaBetaAndRho(self):
         return (self.__alpha, self.__beta, self.__rho)
+
+    
+    def getIterationIndexesAndPathLengths(self):
+        return (self.__iterationIndexes, self.__bestPathLengths)
+
+
+    def addIterationIndex(self, index):
+        self.__iterationIndexes.append(index)
+
+
+    def addPathLength(self, length):
+        self.__bestPathLengths.append(length)
 
 
     def getMap(self):

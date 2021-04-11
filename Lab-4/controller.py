@@ -1,3 +1,5 @@
+import numpy as np
+
 class Controller:
     def __init__(self, repository):
         self.__repository = repository
@@ -21,6 +23,16 @@ class Controller:
         return sensor.getDistancesToOtherSensors()
 
 
+    def getAveragePathLengthForAllDrones(self):
+        drones = self.__repository.getDrones()
+        costs = []
+
+        for drone in drones:
+            costs.append(drone.getPathCost())
+
+        return np.average(np.array(costs)) 
+
+
     def runEdgeSelectionAndPheromoneUpdate(self):
         drones = self.__repository.getDrones()
         alpha, beta, rho = self.__repository.getAlphaBetaAndRho()
@@ -36,6 +48,8 @@ class Controller:
         for iterationIndex in range(0, numberOfIterations):
             print("--------------------------------------- Iteration {} ---------------------------------------".format(iterationIndex))
             self.runEdgeSelectionAndPheromoneUpdate()
+            self.addIterationIndexAndPathLength(iterationIndex, self.getAveragePathLengthForAllDrones())
+
 
 
     def getGraph(self):
@@ -44,3 +58,13 @@ class Controller:
 
     def getDrone(self):
         return self.__repository.getDrone()
+
+
+    def addIterationIndexAndPathLength(self, index, length):
+        self.__repository.addIterationIndex(index)
+        self.__repository.addPathLength(length)
+    
+    
+    def getIterationIndexesAndPathLengths(self):
+        return self.__repository.getIterationIndexesAndPathLengths()
+

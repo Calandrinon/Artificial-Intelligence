@@ -1,5 +1,6 @@
 from constants import *
 import pygame
+import matplotlib.pyplot as plt
 
 
 class UI:
@@ -92,6 +93,16 @@ class UI:
         print(self.__controller.getGraph())
 
 
+    def displayGraph(self):
+        x_axis, y_axis = self.__controller.getIterationIndexesAndPathLengths()
+        plt.xlabel("Iteration")
+        plt.ylabel("Path length")
+        plt.plot(x_axis, y_axis, color="green")
+        plt.legend(["Average path length"], labelcolor=["green"])
+        #plt.pause(0.05)
+        plt.show()
+
+
     def startIterations(self):
         self.__controller.runMultipleIterations()
 
@@ -102,4 +113,5 @@ class UI:
         self.printDummyGraph()
         self.startIterations()
         print("Done.")
+        self.displayGraph()
         self.closePygameOnEvent()    

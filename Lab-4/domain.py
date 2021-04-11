@@ -37,6 +37,10 @@ class Sensor:
         return self.__distancesToOtherSensors
 
 
+    def getTheNumberOfCellsSurveilled(self):
+        return sum(list(map(lambda x: len(x), self.__areas)))
+
+
     def computeMaximumFeasibleArea(self, map):
         directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
@@ -57,6 +61,7 @@ class Sensor:
             self.__areas.append(energyLevelAreas)
 
         self.__areas = list(filter(lambda x: x != [], self.__areas))
+        print("self.__areas for the Sensor {}(length: {}): {}".format(self.getId(), self.getTheNumberOfCellsSurveilled(), self.__areas))
 
 
     def getSurveillanceAreaByEnergyLevel(self, energyLevel, map):
@@ -91,6 +96,10 @@ class Sensor:
             position = sensor.getPosition()
             self.__distancesToOtherSensors[sensor.getId()] = distances[position[0]][position[1]] - 1 if position != self.getPosition() else 0
 
+    
+    def chargeSensor(self, energyLevel):
+        self.__currentEnergyLevel = energyLevel
+
 
     def __repr__(self):
         return "|Sensor {} at position {}|".format(self.getId(), self.getPosition())
@@ -121,6 +130,13 @@ class SensorGraph:
 
     def tau(self, indexOfSensorI, indexOfSensorJ, alpha):
         return self.__pheromoneMatrix[indexOfSensorI][indexOfSensorJ]**alpha
+
+
+    def getTotalNumberOfSurveilledCells(self):
+        totalNumberOfSurveilledCells = 0
+        for sensor in self.__sensors:
+            totalNumberOfSurveilledCells += sensor.getTheNumberOfCellsSurveilled()
+        return totalNumberOfSurveilledCells
 
 
     def __repr__(self):
@@ -192,6 +208,7 @@ class Drone:
         self.__visitedSensors = {}
         self.__path = []
         self.__totalPathCost = 0
+        self.__amountOfEnergyGivenToEachSensor = {}
 
         for node in graph.getSensors():
             self.__visitedSensors[node.getId()] = False
@@ -231,7 +248,28 @@ class Drone:
     def getPosition(self):
         return (self.x, self.y)
 
-                  
+
+    def getRemainingEnergyAfterCompletingTheTour(self):
+        return self.__energy - self.__totalPathCost
+
+
+    def computeTheSensorEnergyBasedOnTheRemainingDroneEnergy(self):
+        remainingEnergy = self.getRemainingEnergyAfterCompletingTheTour()
+        print("The remaining energy of the drone {}:".format(remainingEnergy))
+        totalNumberOfSurveilledCellsInTheGraph = self.__graph.getTotalNumberOfSurveilledCells()
+        sensors = self.__graph.getSensors()
+
+        for sensor in sensors:
+            percentageOfDeservedEnergy = sensor.getTheNumberOfCellsSurveilled() / totalNumberOfSurveilledCellsInTheGraph
+            deservedEnergy = remainingEnergy * percentageOfDeservedEnergy
+            deservedEnergyRounded = round(deservedEnergy)
+            self.__amountOfEnergyGivenToEachSensor[sensor.getId()] = (deservedEnergyRounded, deservedEnergy, percentageOfDeservedEnergy)
+
+
+    def getTheAmountOfEnergyGivenToEachSensor(self):
+        return self.__amountOfEnergyGivenToEachSensor
+
+
     def mapWithDrone(self, mapImage):
         drona = pygame.image.load("drona.png")
         mapImage.blit(drona, (self.y * 20, self.x * 20))
@@ -289,6 +327,7 @@ class Drone:
                         break
                 
         self.__totalPathCost += self.__graph.getEdgeCost(self.__path[0].getId(), self.__path[-1].getId())
+        self.computeTheSensorEnergyBasedOnTheRemainingDroneEnergy()
         print("Drone's path: {}".format(self.__path))
         print("Path cost: {}".format(self.__totalPathCost))
 

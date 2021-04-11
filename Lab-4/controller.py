@@ -1,4 +1,5 @@
 import numpy as np
+from random import randint
 
 class Controller:
     def __init__(self, repository):
@@ -7,6 +8,10 @@ class Controller:
 
     def getSensors(self):
         return self.__repository.getSensors()
+
+
+    def getTheNumberOfSensors(self):
+        return len(self.getSensors())
 
 
     def getMap(self):
@@ -50,6 +55,9 @@ class Controller:
             self.runEdgeSelectionAndPheromoneUpdate()
             self.addIterationIndexAndPathLength(iterationIndex, self.getAveragePathLengthForAllDrones())
 
+        drones = self.__repository.getDrones()
+        randomDroneIndex = randint(0, len(drones))
+        return drones[randomDroneIndex].getTheAmountOfEnergyGivenToEachSensor()
 
 
     def getGraph(self):

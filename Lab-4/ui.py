@@ -104,7 +104,11 @@ class UI:
 
 
     def startIterations(self):
-        self.__controller.runMultipleIterations()
+        droneEnergyDistributionAmongAllSensors = self.__controller.runMultipleIterations()
+        numberOfSensors = self.__controller.getTheNumberOfSensors()
+
+        for sensorIndex in range(0, numberOfSensors):
+            print("The energy level distributed to Sensor no. {}: {}".format(sensorIndex, droneEnergyDistributionAmongAllSensors[sensorIndex]))
 
 
     def run(self):

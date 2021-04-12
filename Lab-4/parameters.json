@@ -1,11 +1,11 @@
 {
     "dronePosition": [4, 7],
-    "droneEnergy": 60,
-    "sensors": [[4, 7], [8, 3], [10, 4], [13, 4], [14, 13], [8, 12], [18, 10]],
+    "droneEnergy": 55,
+    "sensors": [[4, 7], [8, 3], [10, 4], [13, 4], [14, 13], [8, 12], [9,9]],
     "mapFile": "test1.map",
     "numberOfDrones": 20,
     "numberOfIterations": 200,
     "alpha": 1,
     "beta": 1,
-    "rho": 0.2
+    "rho": 0.1
 }

@@ -1,6 +1,7 @@
 from constants import *
 import pygame
 import matplotlib.pyplot as plt
+import time
 
 
 class UI:
@@ -117,14 +118,54 @@ class UI:
         pygame.display.flip()
 
 
+    def startPathAnimation(self, sensors):
+        pair = 0
+        iterations = len(sensors) * 10
+        iteration = 0
+        while iteration <= iterations:
+            firstSensorsPosition = sensors[pair].getPosition()
+            secondSensorsPosition = sensors[pair+1].getPosition()
+            coveredAreaTexture = pygame.Surface((20,20))
+            coveredAreaTexture.fill(RED) 
+            self.__screen.blit(coveredAreaTexture, (firstSensorsPosition[1]*MAP_SIZE, firstSensorsPosition[0]*MAP_SIZE))
+            self.__screen.blit(coveredAreaTexture, (secondSensorsPosition[1]*MAP_SIZE, secondSensorsPosition[0]*MAP_SIZE))
+            pygame.display.flip()
+            time.sleep(0.5)
+            coveredAreaTexture = pygame.Surface((20,20))
+            coveredAreaTexture.fill(BLACK) 
+            self.__screen.blit(coveredAreaTexture, (firstSensorsPosition[1]*MAP_SIZE, firstSensorsPosition[0]*MAP_SIZE))
+            self.__screen.blit(coveredAreaTexture, (secondSensorsPosition[1]*MAP_SIZE, secondSensorsPosition[0]*MAP_SIZE))
+            pygame.display.flip()
+            pair += 1
+            if pair == len(sensors) - 1:
+                firstSensorsPosition = sensors[pair].getPosition()
+                secondSensorsPosition = sensors[0].getPosition()
+                coveredAreaTexture = pygame.Surface((20,20))
+                coveredAreaTexture.fill(RED) 
+                self.__screen.blit(coveredAreaTexture, (firstSensorsPosition[1]*MAP_SIZE, firstSensorsPosition[0]*MAP_SIZE))
+                self.__screen.blit(coveredAreaTexture, (secondSensorsPosition[1]*MAP_SIZE, secondSensorsPosition[0]*MAP_SIZE))
+                pygame.display.flip()
+                time.sleep(0.5)
+                coveredAreaTexture = pygame.Surface((20,20))
+                coveredAreaTexture.fill(BLACK) 
+                self.__screen.blit(coveredAreaTexture, (firstSensorsPosition[1]*MAP_SIZE, firstSensorsPosition[0]*MAP_SIZE))
+                self.__screen.blit(coveredAreaTexture, (secondSensorsPosition[1]*MAP_SIZE, secondSensorsPosition[0]*MAP_SIZE))
+                pygame.display.flip()
+                pair = 0
+
+            iteration += 1
+
+
     def startIterations(self):
-        droneEnergyDistributionAmongAllSensors = self.__controller.runMultipleIterations()
+        droneEnergyDistributionAmongAllSensors, pathSensors = self.__controller.runMultipleIterations()
         numberOfSensors = self.__controller.getTheNumberOfSensors()
 
         for sensorIndex in range(0, numberOfSensors):
             print("The energy level distributed to Sensor no. {}: {}".format(sensorIndex, droneEnergyDistributionAmongAllSensors[sensorIndex]))
 
+        self.displayGraph()
         self.displayFinalSurveilledAreaForEachSensor(droneEnergyDistributionAmongAllSensors) 
+        self.startPathAnimation(pathSensors)
 
 
     def run(self):
@@ -133,5 +174,4 @@ class UI:
         self.printDummyGraph()
         self.startIterations()
         print("Done.")
-        self.displayGraph()
         self.closePygameOnEvent()    

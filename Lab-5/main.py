@@ -14,7 +14,7 @@ from math import sin, cos, pi, trunc
 
 # IMPORT OBJECT LOADER
 from objloader import *
-from solver_solved import solver
+from solver import solver
 
 
 

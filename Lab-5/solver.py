@@ -1,47 +1,60 @@
 ruleTable = {
-    ("PVB", "PB"): "PVVB",
-    ("PVB", "P"): "PVVB",
-    ("PVB", "ZO"): "PVB",
-    ("PVB", "N"): "PB",
-    ("PVB", "NB"): "P",
+    "NB": {
+        "NB": "NVVB",
+        "N": "NVB",
+        "ZO": "NB",
+        "P": "N",
+        "PB": "Z"
+    },
 
-    ("PB", "PB"): "PVVB",
-    ("PB", "P"): "PVB",
-    ("PB", "ZO"): "PB",
-    ("PB", "N"): "P",
-    ("PB", "NB"): "Z",
+    "N": {
+        "NB": "NVB",
+        "N": "NB",
+        "ZO": "N",
+        "P": "Z",
+        "PB": "P"
+    },
 
-    ("P", "PB"): "PVB",
-    ("P", "P"): "PB",
-    ("P", "ZO"): "P",
-    ("P", "N"): "Z",
-    ("P", "NB"): "N",
+    "ZO": {
+        "NB": "NB",
+        "N": "N",
+        "ZO": "Z",
+        "P": "P",
+        "PB": "PB"
+    },
 
-    ("ZO", "PB"): "PB",
-    ("ZO", "P"): "P",
-    ("ZO", "ZO"): "Z",
-    ("ZO", "N"): "N",
-    ("ZO", "NB"): "NB",
+    "P": {
+        "NB": "N",
+        "N": "Z",
+        "ZO": "P",
+        "P": "PB",
+        "PB": "PVB"
+    },
 
-    ("N", "PB"): "P",
-    ("N", "P"): "Z",
-    ("N", "ZO"): "N",
-    ("N", "N"): "NB",
-    ("N", "NB"): "NVB",
+    "PB": {
+        "NB": "Z",
+        "N": "P",
+        "ZO": "PB",
+        "P": "PVB",
+        "PB": "PVVB"
+    },
 
-    ("NB", "PB"): "Z",
-    ("NB", "P"): "N",
-    ("NB", "ZO"): "NB",
-    ("NB", "N"): "NVB",
-    ("NB", "NB"): "NVVB",
+    "PVB": {
+        "NB": "P",
+        "N": "PB",
+        "ZO": "PVB",
+        "P": "PVVB",
+        "PB": "PVVB"
+    },
 
-    ("NVB", "PB"): "N",
-    ("NVB", "P"): "NB",
-    ("NVB", "ZO"): "NVB",
-    ("NVB", "N"): "NVVB",
-    ("NVB", "NB"): "NVVB"
+    "NVB": {
+        "NB": "NVVB",
+        "N": "NVVB",
+        "ZO": "NVB",
+        "P": "NB",
+        "PB": "N"
+    }
 }
-
 
 thetaAngleIntervals = {
     "NVB": ("-", -40, -25),
@@ -73,85 +86,45 @@ tractionForceIntervals = {
     "PVVB": (24, 32, "-")
 }
 
-def triangularMembershipFormula(x, lowerLimit, middleValue, upperLimit):
-    if lowerLimit != "-" and lowerLimit <= x < middleValue:
-        return (x - lowerLimit) / (middleValue - lowerLimit)
 
-    if upperLimit != "-" and middleValue <= x < upperLimit:
-        return (upperLimit - x) / (upperLimit - middleValue)
-
-    if lowerLimit == "-" and x <= middleValue:
+def triangularMembershipFunction(x, lowerLimit, middlePoint, upperLimit):
+    if (lowerLimit == "-" and x <= middlePoint) or (upperLimit == "-" and x >= middlePoint):
         return 1
 
-    if upperLimit == "-" and x >= middleValue:
-        return 1
+    if lowerLimit != "-" and lowerLimit <= x < middlePoint:
+        return (x - lowerLimit) / (middlePoint - lowerLimit)
+
+    if upperLimit != "-" and middlePoint <= x < upperLimit:
+        return (upperLimit - x) / (upperLimit - middlePoint)
 
     return 0
 
 
-def computeMembershipDegreesForTheInputParameter(inputParameter, fuzzyIntervals):
-    membershipDegrees = {}
-    for linguisticVariable in fuzzyIntervals:
-        membershipDegrees[linguisticVariable] = triangularMembershipFormula(inputParameter, fuzzyIntervals[linguisticVariable][0], fuzzyIntervals[linguisticVariable][1], fuzzyIntervals[linguisticVariable][2]) 
-
-    return membershipDegrees 
-
-
-def evaluateRules(thetaMembershipValues, omegaMembershipValues):
-    values = {}
-    for rule in ruleTable:
-        values[rule] = min(thetaMembershipValues[rule[0]], omegaMembershipValues[rule[1]])
-
-    return values 
+def computeTheMembershipValuesOfTheInput(inputParameter, intervals):
+    membershipValues = {}
+    for key in intervals:
+        membershipValues[key] = triangularMembershipFunction(inputParameter, intervals[key][0], intervals[key][1], intervals[key][2])
+    return membershipValues
 
 
-def computeForceMembershipDegree(evaluatedRules):
-    values = {}
-    for rule in ruleTable:
-        if ruleTable[rule] not in values:
-            values[ruleTable[rule]] = evaluatedRules[rule]
-        else:
-            values[ruleTable[rule]] = max(evaluatedRules[rule], values[ruleTable[rule]])
+def computeForceMembership(thetaMembership, omegaMembership):
+    forceMembership = {}
+    for thetaLinguisticVariable in ruleTable:
+        for omegaLinguisticVariable, force in ruleTable[thetaLinguisticVariable].items():
+            value = min(thetaMembership[thetaLinguisticVariable], omegaMembership[omegaLinguisticVariable])
+            forceMembership[force] = value if force not in forceMembership else max(value, forceMembership[force]) 
 
-    return values
+    return forceMembership
 
 
-def solver(t,w):
-    """
-    Parameters
-    ----------
-    t : TYPE: float
-        DESCRIPTION: the angle theta
-    w : TYPE: float
-        DESCRIPTION: the angular speed omega
+def solver(t, w):
+    thetaMembership = computeTheMembershipValuesOfTheInput(t, thetaAngleIntervals)
+    omegaMembership = computeTheMembershipValuesOfTheInput(w, omegaSpeedIntervals)
+    forceMembership = computeForceMembership(thetaMembership, omegaMembership)
 
-    Returns
-    -------
-    F : TYPE: float
-        DESCRIPTION: the force that must be applied to the cart
-    or
-    
-    None :if we have a division by zero
+    sumOfValues = sum(forceMembership.values())
+    if sumOfValues == 0:
+        return None
 
-    """    
-    thetaMembershipValues = computeMembershipDegreesForTheInputParameter(t, thetaAngleIntervals)
-    omegaMembershipValues = computeMembershipDegreesForTheInputParameter(w, omegaSpeedIntervals)    
-    tractionForceValues = evaluateRules(thetaMembershipValues, omegaMembershipValues)
-    evaluatedRules = evaluateRules(thetaMembershipValues, omegaMembershipValues)
-    forceMembershipDegree = computeForceMembershipDegree(evaluatedRules)
-
-    denominator = sum(forceMembershipDegree.values())
-    if denominator == 0:
-        return None 
-
-    middleValues = [interval[1] for interval in tractionForceIntervals.values()] 
-    print("middleValues: ", middleValues)
-    print("forceMembershipDegree: ", forceMembershipDegree)
-
-    numerator = 0
-    forceMembershipValues = [x[1] for x in forceMembershipDegree.items()]
-    print("forceMembershipValues: ", forceMembershipValues)
-    for i in range(0, len(middleValues)):
-        numerator += forceMembershipValues[i] * middleValues[i]
-
-    return numerator / denominator
+    middleValues = {key: value[1] for key, value in tractionForceIntervals.items()}
+    return sum(forceMembership[fuzzySet] * middleValues[fuzzySet] for fuzzySet in forceMembership.keys()) / sumOfValues

@@ -46,8 +46,7 @@ class Centroid:
     def __init__(self, x, y):
         self.__x = x 
         self.__y = y 
-        self.__previousPoints = []
-        self.__currentPoints = []
+        self.__previousPosition = None
         Centroid.id += 1
         self.__id = Centroid.id
 
@@ -69,12 +68,26 @@ class Centroid:
         self.__y = y
 
 
+    def setPosition(self, x, y):
+        self.__previousPosition = (self.__x, self.__y)
+        self.setX(x)
+        self.setY(y)
+
+
     def getX(self):
         return self.__x
 
 
     def getY(self):
         return self.__y
+
+    
+    def getTheCurrentPosition(self):
+        return (self.__x, self.__y)
+
+
+    def getThePreviousPosition(self):
+        return self.__previousPosition
 
 
     def __repr__(self):

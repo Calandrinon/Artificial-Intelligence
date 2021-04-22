@@ -14,3 +14,11 @@ class KMeansController:
         self.__service.repositionCentroids()
 
         return self.__service.getCentroids()
+
+
+    def getTheUnlabelledPoints(self):
+        return self.__service.getTheUnlabelledPoints()
+
+
+    def didTheModelConverge(self):
+        return self.__service.didTheModelConverge()

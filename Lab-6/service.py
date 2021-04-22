@@ -54,11 +54,28 @@ class KMeansService:
 
         for centroid in centroids:
             newPositionOfTheCentroid = self.computeTheMeanOfACluster(centroid.getId())
-            centroid.setX(newPositionOfTheCentroid[0])
-            centroid.setY(newPositionOfTheCentroid[1])
+            centroid.setPosition(newPositionOfTheCentroid[0], newPositionOfTheCentroid[1])
 
         return centroids
 
 
     def getCentroids(self):
         return self.__repository.getCentroids()
+
+
+    def getTheUnlabelledPoints(self):
+        return self.__repository.getTheUnlabelledPoints()    
+
+    
+    def didTheModelConverge(self):
+        centroids = self.__repository.getCentroids()
+        converged = True
+
+        for centroid in centroids:
+            positionDifference = np.array(centroid.getThePreviousPosition()) - np.array(centroid.getTheCurrentPosition())
+            print("positionDifference: {}".format(positionDifference))
+            if positionDifference[0] != 0 or positionDifference[1] != 0:
+                converged = False
+
+        return converged
+

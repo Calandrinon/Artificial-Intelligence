@@ -49,6 +49,7 @@ class Centroid:
         self.__previousPosition = None
         Centroid.id += 1
         self.__id = Centroid.id
+        self.__clusterColors = []
 
 
     def distanceToAPoint(self, point):

@@ -49,3 +49,11 @@ class Repository:
             return self.__unlabelledPoints[index] 
         except Exception as e:
             raise e
+
+    
+    def setClusterColors(self, colors):
+        self.__clusterColors = colors
+
+
+    def getClusterColors(self):
+        return self.__clusterColors

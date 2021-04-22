@@ -1,5 +1,6 @@
-from random import randint
+from random import randint, random
 import numpy as np
+import colorsys
 from domain import Centroid
 
 class KMeansService:
@@ -79,3 +80,11 @@ class KMeansService:
 
         return converged
 
+
+    def generateColors(self, k):
+        rgbColorsAsFloats = [(random(), random(), random()) for i in range(0, k)]
+        self.__repository.setClusterColors(rgbColorsAsFloats)
+
+    
+    def getClusterColors(self):
+        return self.__repository.getClusterColors()

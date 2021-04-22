@@ -1,4 +1,4 @@
-import csv
+import csv, copy
 from domain import Point
 
 class Repository:
@@ -13,13 +13,20 @@ class Repository:
     def readTheDataset(self, filename): 
         with open(filename, 'r') as file:
             reader = csv.reader(file)
+            rows = []
+
             for row in reader:
+                rows.append(row)
+            del rows[0]
+
+            for row in rows:
+                row[1], row[2] = float(row[1]), float(row[2])
                 labelledPoint = Point(*row[1:3])
                 labelledPoint.setTheExpectedCluster(row[0])
                 self.__labelledPoints.append(labelledPoint)
                 unlabelledPoint = Point(*row[1:3])
                 self.__unlabelledPoints.append(unlabelledPoint)
-        
+
 
     def getTheLabelledPoints(self):
         return self.__labelledPoints
@@ -34,7 +41,7 @@ class Repository:
 
 
     def setCentroids(self, centroids):
-        self.__centroids = centroids
+        self.__centroids = copy.deepcopy(centroids)
 
 
     def getUnlabelledPointByIndex(self, index):

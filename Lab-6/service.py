@@ -1,23 +1,26 @@
 from random import randint
 import numpy as np
+from domain import Centroid
 
 class KMeansService:
     def __init__(self, repository):
         self.__repository = repository
 
     def pickTheInitialCentroidsRandomly(self, numberOfCentroidsK):
-        centroidsAsPoints = []
+        centroids = []
         points = self.__repository.getTheUnlabelledPoints()
 
         for centroidIndex in range(0, numberOfCentroidsK):
             pointIndex = randint(0, len(points) - 1)
             point = self.__repository.getUnlabelledPointByIndex(pointIndex)
-            while point in centroidsAsPoints:
+
+            while point in centroids:
                 pointIndex = randint(0, len(points) - 1)
                 point = self.__repository.getUnlabelledPointByIndex(pointIndex)
-            centroidsAsPoints.append(point)
 
-        centroids = list(map(lambda x: Centroid(x.getX(), y.getY()), centroidsAsPoints))
+            centroid = Centroid(point.getX(), point.getY())
+            centroids.append(centroid)
+
         self.__repository.setCentroids(centroids)
         return centroids
     
@@ -40,8 +43,8 @@ class KMeansService:
         points = self.__repository.getTheUnlabelledPoints()
         pointsInTheCluster = list(filter(lambda x: x.getTheExpectedCluster() == clusterId, points))
 
-        meanOfTheXCoordinates = np.average(list(filter(lambda x: x.getX(), pointsInTheCluster))) 
-        meanOfTheYCoordinates = np.average(list(filter(lambda y: y.getY(), pointsInTheCluster))) 
+        meanOfTheXCoordinates = np.average(list(map(lambda x: x.getX(), pointsInTheCluster))) 
+        meanOfTheYCoordinates = np.average(list(map(lambda y: y.getY(), pointsInTheCluster))) 
 
         return (meanOfTheXCoordinates, meanOfTheYCoordinates)
 
@@ -51,4 +54,11 @@ class KMeansService:
 
         for centroid in centroids:
             newPositionOfTheCentroid = self.computeTheMeanOfACluster(centroid.getId())
-            centroid.setX()
+            centroid.setX(newPositionOfTheCentroid[0])
+            centroid.setY(newPositionOfTheCentroid[1])
+
+        return centroids
+
+
+    def getCentroids(self):
+        return self.__repository.getCentroids()

@@ -44,7 +44,8 @@ class Centroid:
     id = -1
 
     def __init__(self, x, y):
-        self.__point = Point(x, y)
+        self.__x = x 
+        self.__y = y 
         self.__previousPoints = []
         self.__currentPoints = []
         Centroid.id += 1
@@ -52,7 +53,8 @@ class Centroid:
 
 
     def distanceToAPoint(self, point):
-        return self.__point.distanceToAnotherPoint(point)
+        pointOfTheCentroid = Point(self.__x, self.__y)
+        return pointOfTheCentroid.distanceToAnotherPoint(point)
         
 
     def getId(self):
@@ -60,16 +62,20 @@ class Centroid:
 
     
     def setX(self, x):
-        self.__point.setX(x)
+        self.__x = x
 
 
     def setY(self, y):
-        self.__point.setY(y)
+        self.__y = y
 
 
     def getX(self):
-        self.__point.getX()
+        return self.__x
 
 
     def getY(self):
-        self.__point.getY()
+        return self.__y
+
+
+    def __repr__(self):
+        return str((self.getX(), self.getY(), self.__id))

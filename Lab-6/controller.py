@@ -16,8 +16,8 @@ class KMeansController:
         return self.__service.getCentroids()
 
 
-    def getTheUnlabelledPoints(self):
-        return self.__service.getTheUnlabelledPoints()
+    def getThePoints(self):
+        return self.__service.getThePoints()
 
 
     def didTheModelConverge(self):

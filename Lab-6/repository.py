@@ -4,8 +4,7 @@ from domain import Point
 class Repository:
 
     def __init__(self):
-        self.__labelledPoints = []
-        self.__unlabelledPoints = []
+        self.__points = []
         self.readTheDataset('dataset.csv')
         self.__centroids = []
 
@@ -21,19 +20,17 @@ class Repository:
 
             for row in rows:
                 row[1], row[2] = float(row[1]), float(row[2])
-                labelledPoint = Point(*row[1:3])
-                labelledPoint.setTheExpectedCluster(row[0])
-                self.__labelledPoints.append(labelledPoint)
-                unlabelledPoint = Point(*row[1:3])
-                self.__unlabelledPoints.append(unlabelledPoint)
+                point = Point(*row[1:3])
+                point.setTheDatasetLabel(row[0])
+                self.__points.append(point)
 
 
-    def getTheLabelledPoints(self):
-        return self.__labelledPoints
+    def getThePoints(self):
+        return self.__points
 
 
-    def getTheUnlabelledPoints(self):
-        return self.__unlabelledPoints
+    def setThePoints(self, points):
+        self.__points = points
 
 
     def getCentroids(self):
@@ -44,9 +41,9 @@ class Repository:
         self.__centroids = copy.deepcopy(centroids)
 
 
-    def getUnlabelledPointByIndex(self, index):
+    def getPointByIndex(self, index):
         try:
-            return self.__unlabelledPoints[index] 
+            return self.__points[index] 
         except Exception as e:
             raise e
 

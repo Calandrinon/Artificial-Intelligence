@@ -6,6 +6,8 @@ class Point:
         self.__x = x
         self.__y = y
         self.__expectedCluster = None
+        self.__datasetLabel = None
+        self.__predictedLabel = None
 
 
     def getX(self):
@@ -20,6 +22,14 @@ class Point:
         return self.__expectedCluster
 
 
+    def getTheDatasetLabel(self):
+        return self.__datasetLabel
+
+
+    def getThePredictedLabel(self):
+        return self.__predictedLabel
+
+
     def setX(self, x):
         self.__x = x
 
@@ -31,13 +41,21 @@ class Point:
     def setTheExpectedCluster(self, expectedCluster):
         self.__expectedCluster = expectedCluster
 
+
+    def setTheDatasetLabel(self, datasetLabel):
+        self.__datasetLabel = datasetLabel
+
+
+    def setThePredictedLabel(self, predictedLabel):
+        self.__predictedLabel = predictedLabel
+
     
     def distanceToAnotherPoint(self, anotherPoint):
         return math.sqrt((self.getX() - anotherPoint.getX())**2 + (self.getY() - anotherPoint.getY())**2)         
 
 
     def __repr__(self):
-        return str((self.__x, self.__y, self.__expectedCluster))  
+        return str((self.__x, self.__y, self.__expectedCluster, self.__datasetLabel, self.__predictedLabel))  
 
 
 class Centroid:
@@ -49,16 +67,29 @@ class Centroid:
         self.__previousPosition = None
         Centroid.id += 1
         self.__id = Centroid.id
+        self.__label = chr(ord('A')+self.__id)
         self.__clusterColors = []
 
 
     def distanceToAPoint(self, point):
         pointOfTheCentroid = Point(self.__x, self.__y)
         return pointOfTheCentroid.distanceToAnotherPoint(point)
+
+    
+    def getLabel(self):
+        return self.__label
+
+
+    def setLabel(self, label):
+        self.__label = label
         
 
     def getId(self):
         return self.__id
+
+
+    def setId(self, id):
+        self.__id = id
 
     
     def setX(self, x):

@@ -9,7 +9,7 @@ class UI:
 
 
     def drawScatterplot(self, k):
-        points = self.__controller.getTheUnlabelledPoints()
+        points = self.__controller.getThePoints()
         colors = self.__controller.getClusterColors()
 
         for clusterIndex in range(0, k):
@@ -21,6 +21,7 @@ class UI:
 
 
     def runTheAlgorithm(self, k):
+        points = self.__controller.getThePoints()
         self.__controller.generateColors(k)
         iterationIndex = 0
         self.__controller.pickTheInitialCentroidsRandomly(k)
@@ -33,13 +34,13 @@ class UI:
 
             for centroid in centroids:
                 print((centroid.getX(), centroid.getY()))
-                points = self.__controller.getTheUnlabelledPoints()
+                points = self.__controller.getThePoints()
             
             converged = self.__controller.didTheModelConverge()
             print("Did the model converge? The answer is: {}".format(converged))
-            print("Sleeping for 2 seconds...")
+            #print("Sleeping for 2 seconds...")
             self.drawScatterplot(k)
-            time.sleep(2)
-        
+            #time.sleep(2)
+
         print("Done!")
         plt.show()

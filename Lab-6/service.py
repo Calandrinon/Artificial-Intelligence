@@ -9,15 +9,15 @@ class KMeansService:
 
     def pickTheInitialCentroidsRandomly(self, numberOfCentroidsK):
         centroids = []
-        points = self.__repository.getTheUnlabelledPoints()
+        points = self.__repository.getThePoints()
 
         for centroidIndex in range(0, numberOfCentroidsK):
             pointIndex = randint(0, len(points) - 1)
-            point = self.__repository.getUnlabelledPointByIndex(pointIndex)
+            point = self.__repository.getPointByIndex(pointIndex)
 
             while point in centroids:
                 pointIndex = randint(0, len(points) - 1)
-                point = self.__repository.getUnlabelledPointByIndex(pointIndex)
+                point = self.__repository.getPointByIndex(pointIndex)
 
             centroid = Centroid(point.getX(), point.getY())
             centroids.append(centroid)
@@ -27,7 +27,7 @@ class KMeansService:
     
 
     def computeTheDistancesFromThePointsToTheCentroids(self):
-        points = self.__repository.getTheUnlabelledPoints()
+        points = self.__repository.getThePoints()
         centroids = self.__repository.getCentroids()
 
         for point in points:
@@ -41,7 +41,7 @@ class KMeansService:
 
     
     def computeTheMeanOfACluster(self, clusterId):
-        points = self.__repository.getTheUnlabelledPoints()
+        points = self.__repository.getThePoints()
         pointsInTheCluster = list(filter(lambda x: x.getTheExpectedCluster() == clusterId, points))
 
         meanOfTheXCoordinates = np.average(list(map(lambda x: x.getX(), pointsInTheCluster))) 
@@ -64,8 +64,8 @@ class KMeansService:
         return self.__repository.getCentroids()
 
 
-    def getTheUnlabelledPoints(self):
-        return self.__repository.getTheUnlabelledPoints()    
+    def getThePoints(self):
+        return self.__repository.getThePoints()    
 
     
     def didTheModelConverge(self):
@@ -88,3 +88,4 @@ class KMeansService:
     
     def getClusterColors(self):
         return self.__repository.getClusterColors()
+

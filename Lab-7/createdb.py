@@ -23,3 +23,4 @@ for pointsTensor in randomTensor:
         datasetTensor = torch.cat((datasetTensor, pointTensorWithFunctionOutput))
 
 torch.save(datasetTensor, "mydataset.dat")
+print(datasetTensor)

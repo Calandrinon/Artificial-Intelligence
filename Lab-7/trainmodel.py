@@ -1,4 +1,4 @@
-import math, torch
+import math, torch, os, shutil
 from myModel import ApproximationNeuralNetwork
 import matplotlib.pyplot as plt
 
@@ -44,6 +44,20 @@ for epochIndex in range(numberOfEpochs):
         plt.pause(0.05)
         print("Epoch: {}; Loss: {}".format(epochIndex, lossFunctionValue))
 
+
+files = os.listdir(os.getcwd()+"/plots")
+images = list(filter(lambda filename: filename.split(".")[-1] == "png", files))
+images.sort()
+
+try:
+    imageIndex = int(images[-1].split("_")[1].split(".")[0])
+except IndexError as ie:
+    print(ie)
+    imageIndex = 0
+
+imageFilename = "plot_" + str(imageIndex + 1) + ".png"
+plt.savefig(imageFilename)
+shutil.move(os.getcwd()+"/"+imageFilename, os.getcwd()+"/plots")
 plt.show()
 
 filename = "ApproximationNeuralNetwork.pt"

@@ -1,5 +1,5 @@
 import math, torch, os, shutil
-from myModel import ApproximationNeuralNetwork
+import myModel
 import matplotlib.pyplot as plt
 
 trainingDataTensor = torch.load("mydataset.dat")
@@ -10,20 +10,20 @@ lossFunction = torch.nn.MSELoss()
 inputLayerSize = 2
 hiddenLayerSize = 10
 outputLayerSize = 1
-approximationNeuralNetwork = ApproximationNeuralNetwork(inputLayerSize, hiddenLayerSize, outputLayerSize)
+approximationNeuralNetwork = myModel.ApproximationNeuralNetwork(inputLayerSize, hiddenLayerSize, outputLayerSize)
 
 optimizer = torch.optim.SGD(approximationNeuralNetwork.parameters(), lr=0.01)
 listOfErrors = []
 
-batchSize = 16
+batchSize = 100
 numberOfBatches = int(len(trainingDataTensor) / batchSize)
-numberOfEpochs = 2000
+numberOfEpochs = 10000
 epochList = []
 
 for epochIndex in range(numberOfEpochs):
     for batchIndex in range(numberOfBatches):
-        inputBatch = inputValues[batchSize * batchIndex:batchSize + (batchIndex + 1),]
-        outputBatch = givenFunctionValues[batchSize * batchIndex:batchSize + (batchIndex + 1),]
+        inputBatch = inputValues[batchSize * batchIndex:batchSize * (batchIndex + 1),]
+        outputBatch = givenFunctionValues[batchSize * batchIndex:batchSize * (batchIndex + 1),]
         predictedFunctionValue = approximationNeuralNetwork(inputBatch)
         lossFunctionValue = lossFunction(predictedFunctionValue, outputBatch)
 
@@ -31,7 +31,7 @@ for epochIndex in range(numberOfEpochs):
         lossFunctionValue.backward()
         optimizer.step()
 
-    if epochIndex % 100 == 99:
+    if epochIndex % 99 == 0:
         predictedFunctionValues = approximationNeuralNetwork(inputValues)
         lossFunctionValue = lossFunction(predictedFunctionValues, givenFunctionValues).tolist()
         listOfErrors.append(lossFunctionValue)
@@ -47,13 +47,8 @@ for epochIndex in range(numberOfEpochs):
 
 files = os.listdir(os.getcwd()+"/plots")
 images = list(filter(lambda filename: filename.split(".")[-1] == "png", files))
-images.sort()
-
-try:
-    imageIndex = int(images[-1].split("_")[1].split(".")[0])
-except IndexError as ie:
-    print(ie)
-    imageIndex = 0
+imageIndexes = list(map(lambda filename: int(filename.split(".")[0].split("_")[1]), images))
+imageIndex = max(imageIndexes)
 
 imageFilename = "plot_" + str(imageIndex + 1) + ".png"
 plt.savefig(imageFilename)

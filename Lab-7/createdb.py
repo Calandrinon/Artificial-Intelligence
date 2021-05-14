@@ -2,25 +2,19 @@ import torch
 import json
 import math
 
-def sinusoidalFunction(x1, x2):
-    return torch.sin(torch.add(x1, x2 / math.pi))
+right, left, size = 10, -10, 1000
+randomTensor = (right - left) * torch.rand((size, 2)) + left
+firstCoordinate = []
+secondCoordinate = []
 
+for value in randomTensor:
+    firstCoordinate.append(value[0])
+    secondCoordinate.append(value[1])
 
-randomTensorOfIntegersBetweenNegative10And10 = torch.randint(-10, 10, (1000, 2))
-randomTensorOfNumbersBetween0And1 = torch.rand(1000, 2)
-randomTensor = randomTensorOfIntegersBetweenNegative10And10 * randomTensorOfNumbersBetween0And1
+firstCoordinate = torch.tensor(firstCoordinate)
+secondCoordinate = torch.tensor(secondCoordinate)
 
-datasetTensor = None
-
-for pointsTensor in randomTensor:
-    pointAsList = pointsTensor.tolist()
-    pointAsList.append(sinusoidalFunction(pointsTensor[0], pointsTensor[1]))
-    pointTensorWithFunctionOutput = torch.tensor([pointAsList])
-
-    if datasetTensor == None:
-        datasetTensor = pointTensorWithFunctionOutput
-    else:
-        datasetTensor = torch.cat((datasetTensor, pointTensorWithFunctionOutput))
-
-torch.save(datasetTensor, "mydataset.dat")
-print(datasetTensor)
+functionValues = torch.sin(firstCoordinate + (secondCoordinate / math.pi))
+dataset = torch.column_stack((randomTensor, functionValues))
+print(dataset)
+torch.save(dataset, "mydataset.dat")

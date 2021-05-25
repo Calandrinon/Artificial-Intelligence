@@ -12,7 +12,7 @@ hiddenLayerSize = 10
 outputLayerSize = 1
 approximationNeuralNetwork = myModel.ApproximationNeuralNetwork(inputLayerSize, hiddenLayerSize, outputLayerSize)
 
-optimizer = torch.optim.SGD(approximationNeuralNetwork.parameters(), lr=0.01)
+optimizer = torch.optim.SGD(approximationNeuralNetwork.parameters(), lr=0.05)
 listOfErrors = []
 
 batchSize = 100
@@ -31,7 +31,7 @@ for epochIndex in range(numberOfEpochs):
         lossFunctionValue.backward()
         optimizer.step()
 
-    if epochIndex % 99 == 0:
+    if epochIndex % 100 == 0:
         predictedFunctionValues = approximationNeuralNetwork(inputValues)
         lossFunctionValue = lossFunction(predictedFunctionValues, givenFunctionValues).tolist()
         listOfErrors.append(lossFunctionValue)

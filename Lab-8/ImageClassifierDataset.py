@@ -38,6 +38,20 @@ class ImageClassifierDataset(Dataset):
         return len(self.images)
 
 
+class LabelledImage:
+    def __init__(self, image, label):
+        self.__image = image
+        self.__label = label 
+
+    
+    def getImage(self):
+        return self.__image 
+    
+
+    def getLabel(self):
+        return self.__label 
+
+
 class ImageReader:
 
     def __init__(self, pathToDirectory):
@@ -54,11 +68,14 @@ class ImageReader:
             listOfImages = os.listdir(self.__pathToDirectory + "/" + directory) 
             for image in listOfImages:
                 if directory == "Men":
-                    self.__maleImages.append(Image.open(self.__pathToDirectory + "/" + directory + "/" + image))
+                    labelledImage = LabelledImage(Image.open(self.__pathToDirectory + "/" + directory + "/" + image), "man")
+                    self.__maleImages.append(labelledImage)
                 elif directory == "Women":
-                    self.__femaleImages.append(Image.open(self.__pathToDirectory + "/" + directory + "/" + image))
+                    labelledImage = LabelledImage(Image.open(self.__pathToDirectory + "/" + directory + "/" + image), "woman")
+                    self.__femaleImages.append(labelledImage)
                 else:
-                    self.__thingsImages.append(Image.open(self.__pathToDirectory + "/" + directory + "/" + image))
+                    labelledImage = LabelledImage(Image.open(self.__pathToDirectory + "/" + directory + "/" + image), "thing")
+                    self.__thingsImages.append(labelledImage)
         
         print(" ============================================= Men ============================================= ")
         print(self.__maleImages)
@@ -82,10 +99,13 @@ class ImageReader:
 
 imageReader = ImageReader("FacesDataset")
 someMen = imageReader.getImagesOfMen()
-someMen[0].show()
+someMen[2].getImage().show()
+print(someMen[2].getLabel())
 
 someWomen = imageReader.getImagesOfWomen()
-someWomen[0].show()
+someWomen[-2].getImage().show()
+print(someWomen[-2].getLabel())
 
 someThings = imageReader.getImagesOfThings()
-someThings[0].show()
+someThings[-1].getImage().show()
+print(someThings[-1].getLabel())
